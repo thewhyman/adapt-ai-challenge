@@ -6,3 +6,4 @@ node_modules/
 .DS_Store
 Neo4j-*.txt
 tsconfig.tsbuildinfo
+.claude/
