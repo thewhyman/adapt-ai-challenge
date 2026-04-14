@@ -1,0 +1,7 @@
+node_modules/
+.next/
+.env.local
+.env*.local
+.mcp.json
+.DS_Store
+Neo4j-*.txt
