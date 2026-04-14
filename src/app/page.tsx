@@ -102,37 +102,12 @@ export default function Home() {
 
         <div className="transition-all duration-500 ease-out transform">
           {step === "upload" && (
-            <div className="max-w-2xl mx-auto space-y-6">
-              <div className="glass-panel rounded-2xl p-8">
-                <FileUpload
-                  onExtracted={handleExtracted}
-                  isLoading={isLoading}
-                  setIsLoading={setIsLoading}
-                />
-              </div>
-              {!isLoading && (
-                <div className="text-center mt-4">
-                  <div className="inline-flex items-center justify-center w-full relative">
-                    <hr className="w-full border-zinc-200 dark:border-zinc-800" />
-                    <span className="absolute px-4 bg-zinc-50 dark:bg-zinc-950 text-zinc-400 text-sm font-medium z-10">OR</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      handleExtracted({
-                        documentId: "doc-eval-demo",
-                        title: "Palantir Apollo: Continuous Deployment for the Edge",
-                        documentType: "Technical Whitepaper",
-                        sectionCount: 4,
-                        conceptCount: 18,
-                      });
-                    }}
-                    className="mt-6 inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 transition-all active:scale-95"
-                  >
-                    🚀 Run 1-Click Evaluator Demo
-                  </button>
-                  <p className="mt-3 text-xs text-zinc-500">Bypasses upload and pre-loads a deep-tech whitepaper into the ontology engine.</p>
-                </div>
-              )}
+            <div className="glass-panel rounded-2xl p-8 max-w-2xl mx-auto">
+              <FileUpload
+                onExtracted={handleExtracted}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+              />
             </div>
           )}
 
