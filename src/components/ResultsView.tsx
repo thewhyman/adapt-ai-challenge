@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -27,27 +28,6 @@ interface ResultsViewProps {
   rationale: Rationale;
   onReset: () => void;
   onNewAdaptation: () => void;
-}
-
-// ---------------------------------------------------------------------------
-// Minimal markdown renderer — no external deps
-// ---------------------------------------------------------------------------
-
-function renderMarkdown(md: string): string {
-  return md
-    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold mt-6 mb-2 text-gray-800">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-8 mb-3 text-gray-900">$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/^[-*] (.+)$/gm, '<li class="ml-4 mb-1 list-disc list-inside">$1</li>')
-    .replace(
-      /(<li[^>]*>.*?<\/li>\n?)+/g,
-      (match) => `<ul class="my-3 space-y-1">${match}</ul>`
-    )
-    .replace(
-      /^(?!<[hul])((?!<).+)$/gm,
-      '<p class="mb-3 leading-relaxed text-gray-700">$1</p>'
-    );
 }
 
 // ---------------------------------------------------------------------------
@@ -220,10 +200,9 @@ export default function ResultsView({
               <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-6">
                 Adapted Content
               </h2>
-              <article
-                className="prose prose-gray max-w-none"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(adaptedContent) }}
-              />
+              <article className="prose prose-gray max-w-none">
+                <ReactMarkdown>{adaptedContent}</ReactMarkdown>
+              </article>
             </div>
           </section>
 

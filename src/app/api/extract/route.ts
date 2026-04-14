@@ -36,6 +36,14 @@ interface ExtractionResult {
 
 export async function POST(request: NextRequest) {
   try {
+    const contentType = request.headers.get("content-type") || "";
+    if (!contentType.includes("multipart/form-data")) {
+      return NextResponse.json(
+        { error: "Expected multipart/form-data. A browser extension may be stripping the Content-Type header. Try incognito mode." },
+        { status: 400 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
@@ -51,13 +59,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Could not extract text from file" }, { status: 400 });
     }
 
-    // Pass 1: Claude extracts structure
+    // Truncate to ~100K chars (~50K tokens) to stay within context and keep speed
+    const truncatedContent = content.length > 100_000
+      ? content.slice(0, 100_000) + "\n\n[... truncated for processing]"
+      : content;
+
+    // Pass 1: Claude extracts structure (Haiku for speed — extraction is structured, not creative)
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 8192,
       system: EXTRACTION_SYSTEM_PROMPT,
       messages: [
-        { role: "user", content: EXTRACTION_USER_PROMPT(content, file.name) },
+        { role: "user", content: EXTRACTION_USER_PROMPT(truncatedContent, file.name) },
       ],
     });
 
@@ -72,7 +85,23 @@ export async function POST(request: NextRequest) {
       jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
     }
 
-    const extracted: ExtractionResult = JSON.parse(jsonStr);
+    let extracted: ExtractionResult;
+    try {
+      extracted = JSON.parse(jsonStr);
+    } catch {
+      const fixed = jsonStr.replace(/(?<=:\s*")([\s\S]*?)(?="(?:\s*[,}\]]))/g, (match) =>
+        match.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
+      );
+      try {
+        extracted = JSON.parse(fixed);
+      } catch {
+        console.error("Failed to parse Claude response:", jsonStr.slice(0, 500));
+        return NextResponse.json(
+          { error: "Claude returned malformed JSON. Please try again." },
+          { status: 502 }
+        );
+      }
+    }
 
     // Generate document ID
     const docId = `doc-${Date.now()}`;

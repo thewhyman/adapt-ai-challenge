@@ -77,13 +77,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No text response from Claude" }, { status: 500 });
     }
 
-    // Parse JSON response
+    // Parse JSON response — handle markdown fences and malformed output
     let jsonStr = textBlock.text.trim();
     if (jsonStr.startsWith("```")) {
       jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
     }
 
-    const adapted = JSON.parse(jsonStr);
+    let adapted;
+    try {
+      adapted = JSON.parse(jsonStr);
+    } catch {
+      // Claude sometimes puts unescaped newlines in JSON string values.
+      // Try to fix by replacing literal newlines inside strings.
+      const fixed = jsonStr.replace(/(?<=:\s*")([\s\S]*?)(?="(?:\s*[,}\]]))/g, (match) =>
+        match.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
+      );
+      try {
+        adapted = JSON.parse(fixed);
+      } catch (e2) {
+        console.error("Failed to parse Claude response:", jsonStr.slice(0, 500));
+        return NextResponse.json(
+          { error: "Claude returned malformed JSON. Please try again." },
+          { status: 502 }
+        );
+      }
+    }
     const adaptationId = `adapt-${Date.now()}`;
 
     // 6. Write adaptation to Neo4j
