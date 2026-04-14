@@ -11,7 +11,18 @@ This project is submitted as part of the **AI Fund Visiting Engineer Builder Cha
 
 ---
 
-## 🚀 Deliverables
+## 🚀 Evaluator Fast-Track
+
+Before diving into the codebase, see the architecture in action:
+
+1.  **[📺 60-Second Founder Walkthrough (Loom)](#)**
+    *   *A 1-minute visual proof of the Co-Dialectic engine and Neo4j ontology wedge.*
+2.  **[✨ The Frictionless Epiphany (Showcase)](docs/SHOWCASE.md)**
+    *   *A frictionless Markdown artifact proving complex text transformation across 3 distinct personas instantly.*
+
+---
+
+## 📦 Deliverables
 
 As per the challenge requirements, all core deliverables are accessible below:
 
