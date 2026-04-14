@@ -39,15 +39,17 @@ export async function POST(request: NextRequest) {
     );
     const concepts = conceptRows.map((row) => toPlain((row as Record<string, unknown>).c));
 
-    // 3. Read audience profile
-    const profileRows = await read(
-      `MATCH (a:AudienceProfile {id: $audienceId}) RETURN a`,
-      { audienceId }
-    );
-    if (profileRows.length === 0) {
-      return NextResponse.json({ error: "Audience profile not found" }, { status: 404 });
+    // 3. Read audience profile (From injected Co-Dialectic static engine to bypass DB migration)
+    const CO_DIALECTIC_PERSONAS = [
+      { id: "aud-steve-jony", name: "The Visionary Builder (Steve Jobs + Jony Ive)", technicalDepth: 3, lengthBudget: "brief", focusAreas: ["User Experience", "Product Market Fit", "Simplification"], terminologyPreference: "accessible", decisionContext: "Focuses entirely on why this matters to the human using it, stripping away all technical bloat or generic corporate speak." },
+      { id: "aud-shreyas-linus", name: "The Critical Engineer (Shreyas Doshi + Linus Torvalds)", technicalDepth: 5, lengthBudget: "detailed", focusAreas: ["Architecture", "Edge Cases", "Scalability", "Trade-offs"], terminologyPreference: "technical", decisionContext: "Ruthlessly pragmatic. Demands to know the exact technical architecture, failure modes, and why this doesn't over-engineer the core problem." },
+      { id: "aud-nate-reid", name: "The Scaled Operator (Nate Silver + Reid Hoffman)", technicalDepth: 4, lengthBudget: "moderate", focusAreas: ["Growth Loops", "Data Validity", "Network Effects", "ROI"], terminologyPreference: "business", decisionContext: "Looks for compounding advantages. Needs to see the data proof and the exact mechanism by which this product or document scales an organization." }
+    ];
+    
+    const profile = CO_DIALECTIC_PERSONAS.find(p => p.id === audienceId);
+    if (!profile) {
+      return NextResponse.json({ error: "Co-Dialectic Audience profile not found" }, { status: 404 });
     }
-    const profile = toPlain((profileRows[0] as Record<string, unknown>).a) as AudienceProfile;
 
     // 4. Read output format
     const formatRows = await read(

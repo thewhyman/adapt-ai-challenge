@@ -1,66 +1,68 @@
-# Adapt AI — PRD
-**Author:** Anand Vallamsetla | **Date:** 2026-04-13 | **Status:** MVP Build Guide
+# Product Requirements Document (PRD): Adapt AI
+
+**Venture Idea:** Adapt AI
+**Challenge:** AI Fund Visiting Engineer (48-hour Builder Challenge)
+**Author:** Anand Vallamsetla
 
 ---
 
-## Who is the user and what is their pain point
+## 1. Executive Summary
+Adapt AI solves the "last-mile delivery" problem of enterprise knowledge. Organizations generate massive amounts of high-value content (strategy docs, technical specs, research), but its impact is bottlenecked because it's locked in a single framing. A 20-page technical spec is opaque to Sales; a marketing brief lacks the rigor needed by Engineering. 
 
-**Primary user:** Content operations leads, product managers, and L&D teams at mid-to-large enterprises (500+ employees).
+Adapt AI is an **enterprise content adaptation layer**. It takes a single source-of-truth document, extracts its underlying ontology (concepts, sections, arguments), and dynamically regenerates it through the lens of **hyper-specific, multi-dimensional audiences** using the **Co-Dialectic Persona Engine**.
 
-**The pain:** Organizations produce high-value knowledge content — technical documentation, training materials, SOPs, research briefs — but it only works for the audience it was written for. A 40-page technical architecture doc is useless to the VP who needs a 1-page investment case. A training manual written for engineers doesn't help the sales team explain the product. A recorded onboarding session is unsearchable.
+---
 
-Today, repurposing is manual: a senior engineer spends 3 hours distilling a design doc into an executive summary, a product marketer rewrites a technical spec into a customer-facing one-pager, an L&D specialist reformats a procedure into a quick-reference card. This is **slow** (hours per adaptation), **inconsistent** (each person adapts differently), and **expensive** (done by the most senior people, who should be doing higher-judgment work).
+## 2. The Unfair Advantages (Why This Wins)
 
-**Quantified pain:** Enterprise content teams spend ~30% of their time reformatting and repurposing existing content (Kapost/Content Marketing Institute data). For a 10-person content team at $120K avg, that's $360K/year spent on mechanical transformation.
+We are not building a ChatGPT "summarize this for me" wrapper. Two core architectural choices form our enterprise moat:
 
-## What is your wedge into this market
+### A. The Neo4j Ontology Moat (Palantir/Glean Model)
+LLMs are stateless text generators. They hallucinate structure. **Adapt AI extracts the document into a strict graphical ontology in Neo4j.** 
+* LLM extracts `Concepts`, `Sections`, and `Mentions`.
+* Neo4j stores this as a queryable Graph DB.
+* **Why it matters:** Just like Palantir and Glean, the real enterprise value isn't the chatbot—it's the structured ontology that maps the organization's brain. Adapt AI persists knowledge structure independently of the model.
 
-**Wedge:** Single-document, audience-aware adaptation. Take one input document and produce structurally-adapted outputs for different audiences — not summarization, but intelligent transformation that understands *what each audience needs to know and how they need to consume it.*
+### B. The Co-Dialectic Persona Engine
+Generic roles ("Executive", "IC") produce generic, useless text. Adapt AI utilizes **Persona Fusion** (e.g., Steve Jobs + Jony Ive for Vision & UX; Linus Torvalds + Shreyas Doshi for Architecture & Pragmatism). 
+* True insight requires crossing problem spaces.
+* By adapting content using fused, high-caliber expert lenses, Adapt AI surfaces the most critical blind spots and value propositions for the target audience.
 
-**Why this wedge:**
-1. **Highest-frequency pain.** Every department does this daily. It's the content equivalent of "translating between languages" — except the languages are audiences (technical ↔ executive ↔ customer ↔ training).
-2. **Demonstrably beyond summarization.** The market has plenty of "summarize this doc" tools. Adapt AI's structural understanding + audience-aware restructuring is a defensible technical moat.
-3. **Zero integration required.** Upload a file, get adapted outputs. No knowledge base setup, no API integration, no change management. This is the fastest path to "aha" moment.
-4. **Expands naturally.** Single-doc adaptation → multi-doc knowledge base → continuous adaptation pipeline → enterprise content layer.
+---
 
-**Founder-market fit:** I built and shipped a cross-platform content adaptation system (Co-Dialectic campaign) that transforms a single piece of content into LinkedIn, Reddit, Twitter, Substack, and Instagram-native formats — each with platform-specific tone, structure, and audience targeting. 1,761 impressions across platforms in the first campaign. Adapt AI is this concept applied to enterprise knowledge content.
+## 3. Product Features & MVP Scope
 
-## What is in the MVP and what you explicitly cut
+### 3.1. MVP Scope (48-hr Challenge)
+The 48-hour MVP hyper-focuses on the core wedge: **Ontology Extraction + Co-Dialectic Adaptation**.
 
-### In the MVP (this build)
+✅ **Feature 1: Graph-Based Extraction**
+* Users upload a PDF (up to 20 pages).
+* The LLM pipeline extracts sections and core concepts.
+* Results are persisted iteratively into a Neo4j Graph.
 
-| Feature | Why |
-|---|---|
-| **PDF and DOCX upload** | Two most common enterprise content formats |
-| **Content structure extraction** | The core differentiator — LLM extracts sections, key concepts, complexity level, audience assumptions. Visualized as a content map. |
-| **3 audience profiles: Executive, Technical IC, Customer-Facing** | Covers the three highest-frequency adaptation paths in enterprise |
-| **3 output formats: Executive Summary, One-Pager, Quick Reference** | Most common deliverable types requested from content adaptation |
-| **3-ontology content modeling** | Content graph uses a standards-based 3-ontology stack: Dublin Core (document metadata), SKOS (concept taxonomies and relationships), W3C ORG (organizational roles and audience targeting). Standards compliance enables future interoperability and export. |
-| **Neo4j-backed content graph** | Extracted structure is persisted in Neo4j Aura as 9 node types and 10 relationship types (Document→Section→Concept→ConceptScheme, Adaptation→AudienceProfile→Role→Organization). Graph relationships make concept dependencies and cross-section relationships queryable — the foundation for multi-document awareness in Phase 2. See [neo4j-ontology.md](docs/neo4j-ontology.md) for full schema. |
-| **Side-by-side adaptation view** | Shows original structure alongside adapted output — makes the intelligence visible |
-| **Adaptation rationale** | Brief explanation of what was kept/cut/simplified/expanded and why — builds trust in AI output |
-| **Deployed URL** | Vercel deployment, accessible to evaluators |
+✅ **Feature 2: Co-Dialectic Adaptation**
+* Users select a pre-configured fused persona (e.g., "The Visionary Builder", "The Critical Engineer").
+* The engine passes the Neo4j ontology map to Claude 3.5 Sonnet to rewrite the context entirely through that lens.
 
-### Explicitly cut (Phase 2+)
+✅ **Feature 3: Adaptation Rationale**
+* The UI explicitly shows *why* changes were made (what was kept, what was simplified or expanded, and terminology translations) to build absolute trust.
 
-| Cut | Why deferred |
-|---|---|
-| Video/audio/transcript input | Multi-modal adds complexity without proving core value prop. Phase 2 after document adaptation is validated. |
-| RAG over knowledge base | Single-doc adaptation proves the AI; multi-doc RAG is a retrieval problem. Neo4j graph is the foundation — RAG queries traverse it in Phase 2. |
-| Custom audience profiles | 3 pre-built profiles demonstrate the concept. Custom profiles are a configuration feature, not a proof of intelligence. |
-| Batch processing | Single-doc flow proves E2E. Batch is a scale feature. |
-| Team collaboration / sharing | Not relevant to proving core value. Phase 3. |
-| Slide deck input/output | Adds format complexity. PDFs of slide decks work as input for MVP. |
+### 3.2. Out of Scope for MVP (Conscious Omissions)
+* **Auth & Workspaces:** Unnecessary for evaluating the core LLM reasoning loop.
+* **Multi-doc RAG:** Premature optimization. We must prove single-document structural parsing first before adding retrieval complexity.
 
-## Why you sequenced the build the way you did
+---
 
-**Sequence:** Graph schema + ontology seeding → Structure extraction → Adaptation engine → UI → Polish → Deploy
+## 4. User Experience (Founder Mode UI)
 
-**Rationale:**
-1. **Graph schema and seed data come first.** Neo4j schema (9 node types, 10 relationship types, 9 uniqueness constraints) must exist before extraction can persist. Seed AudienceProfiles, OutputFormats, Roles, Organization, and the initial ConceptScheme.
-2. **Structure extraction is the riskiest component.** If the LLM can't reliably extract document structure, classify concepts into the SKOS ConceptScheme, and persist the content graph to Neo4j, the whole product fails. Build and validate this second.
-3. **Adaptation engine is the core value.** Once the content graph is in Neo4j, the adaptation pipeline (graph traversal + audience profile → adaptation plan → generated output) is where product judgment lives. Graph relationships enable richer adaptation — e.g., traversing `DEPENDS_ON` and `MENTIONS_CONCEPT` edges to decide what context an executive needs.
-4. **UI makes it real.** The side-by-side view with adaptation rationale is what transforms a "tech demo" into a "product." Build it after the engine works.
-5. **Polish is earned.** Only polish what's working. Ship fast, refine the rough edges.
+The interface is modeled after top-tier AI applications (Vercel, Anthropic). It relies on premium typography (Inter), glassmorphism, and a strict dark/light high-contrast aesthetic to reduce cognitive load. 
+* **State 1:** Clean upload dropzone.
+* **State 2:** Visual breakdown of extracted sections & concepts.
+* **State 3:** Split-view results showing the adapted text alongside the AI's transparent reasoning.
 
-This sequence front-loads data model risk (will the graph schema support the queries the adaptation engine needs?) and technical risk (can the LLM reliably extract into graph structure?) before presentation risk — the right order for a 48-hour build where "judgment and speed, not polish" is the evaluation criteria.
+---
+
+## 5. Success Metrics
+* **Extraction Quality:** Concepts extracted graph cleanly onto the original document text without hallucinated nodes.
+* **Adaptation Delta:** Word count/complexity demonstrably changes by >30% between "The Critical Engineer" view and "The Visionary Builder" view.
+* **Execution Velocity:** Completing a stable, full-stack Neo4j graph application in <48 hours proves intense engineering momentum.

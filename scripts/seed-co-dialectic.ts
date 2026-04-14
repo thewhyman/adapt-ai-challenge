@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { read, toPlain } from "@/lib/neo4j";
+import "dotenv/config";
+import { write } from "../src/lib/neo4j";
 
 const CO_DIALECTIC_PERSONAS = [
   {
@@ -37,18 +37,40 @@ const CO_DIALECTIC_PERSONAS = [
   }
 ];
 
-export async function GET() {
-  try {
-    // We override the DB audience lookup to inject the static Co-Dialectic Personas
-    // but still fetch the dynamic Output Formats from Neo4j.
-    const formatsRows = await read(`MATCH (f:OutputFormat) RETURN f ORDER BY f.name`);
-    
-    return NextResponse.json({
-      audiences: CO_DIALECTIC_PERSONAS,
-      formats: formatsRows.map((row) => toPlain((row as Record<string, unknown>).f)),
+async function seed() {
+  console.log("🌱 Wiping old audiences...");
+  await write(`MATCH (a:AudienceProfile) DETACH DELETE a`);
+  
+  console.log("🌱 Injecting Co-Dialectic Persona Engine...");
+  
+  for (const aud of CO_DIALECTIC_PERSONAS) {
+    await write(`
+      MERGE (r:Role {name: $roleName, orgLevel: $orgLevel})
+      CREATE (a:AudienceProfile {
+        id: $id,
+        name: $name,
+        technicalDepth: toInteger($technicalDepth),
+        lengthBudget: $lengthBudget,
+        focusAreas: $focusAreas,
+        terminologyPreference: $terminologyPreference,
+        decisionContext: $decisionContext
+      })
+      CREATE (a)-[:TARGETS_ROLE]->(r)
+    `, {
+      id: aud.id,
+      name: aud.name,
+      roleName: aud.roleName,
+      orgLevel: aud.orgLevel,
+      technicalDepth: aud.technicalDepth,
+      lengthBudget: aud.lengthBudget,
+      focusAreas: aud.focusAreas,
+      terminologyPreference: aud.terminologyPreference,
+      decisionContext: aud.decisionContext
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.log(`✅ Seeded: ${aud.name}`);
   }
+  console.log("🎉 Complete!");
+  process.exit(0);
 }
+
+seed().catch(console.error);
