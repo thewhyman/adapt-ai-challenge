@@ -5,3 +5,4 @@ node_modules/
 .mcp.json
 .DS_Store
 Neo4j-*.txt
+tsconfig.tsbuildinfo

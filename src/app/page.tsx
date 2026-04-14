@@ -1,65 +1,155 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import FileUpload from "@/components/FileUpload";
+import AdaptSelector from "@/components/AdaptSelector";
+import ResultsView from "@/components/ResultsView";
+
+type Step = "upload" | "select" | "results";
+
+interface ExtractResult {
+  documentId: string;
+  title: string;
+  documentType: string;
+  sectionCount: number;
+  conceptCount: number;
+}
+
+interface AdaptResult {
+  adaptationId: string;
+  audienceName: string;
+  formatName: string;
+  adaptedContent: string;
+  rationale: {
+    kept: string[];
+    simplified: string[];
+    expanded: string[];
+    cut: string[];
+    terminologyChanges: { original: string; adapted: string; reason: string }[];
+  };
+}
 
 export default function Home() {
+  const [step, setStep] = useState<Step>("upload");
+  const [isLoading, setIsLoading] = useState(false);
+  const [extractResult, setExtractResult] = useState<ExtractResult | null>(null);
+  const [adaptResult, setAdaptResult] = useState<AdaptResult | null>(null);
+
+  function handleExtracted(result: ExtractResult) {
+    setExtractResult(result);
+    setStep("select");
+  }
+
+  function handleAdapted(result: AdaptResult) {
+    setAdaptResult(result);
+    setStep("results");
+  }
+
+  function handleReset() {
+    setExtractResult(null);
+    setAdaptResult(null);
+    setStep("upload");
+  }
+
+  function handleNewAdaptation() {
+    setAdaptResult(null);
+    setStep("select");
+  }
+
+  if (step === "results" && adaptResult) {
+    return (
+      <ResultsView
+        audienceName={adaptResult.audienceName}
+        formatName={adaptResult.formatName}
+        adaptedContent={adaptResult.adaptedContent}
+        rationale={adaptResult.rationale}
+        onReset={handleReset}
+        onNewAdaptation={handleNewAdaptation}
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <h1 className="text-2xl font-bold text-gray-900">Adapt AI</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Upload a document, extract its structure, adapt it for different audiences.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Step indicator */}
+        <div className="flex items-center gap-3 mb-8">
+          <StepBadge number={1} label="Upload" active={step === "upload"} done={step !== "upload"} />
+          <StepDivider />
+          <StepBadge number={2} label="Adapt" active={step === "select"} done={step === "results"} />
+          <StepDivider />
+          <StepBadge number={3} label="Results" active={step === "results"} done={false} />
         </div>
+
+        {step === "upload" && (
+          <FileUpload
+            onExtracted={handleExtracted}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+          />
+        )}
+
+        {step === "select" && extractResult && (
+          <div>
+            <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-gray-900">{extractResult.title}</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {extractResult.sectionCount} sections &middot; {extractResult.conceptCount} concepts &middot; {extractResult.documentType}
+                  </p>
+                </div>
+                <button
+                  onClick={handleReset}
+                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  Change document
+                </button>
+              </div>
+            </div>
+
+            <AdaptSelector
+              documentId={extractResult.documentId}
+              documentTitle={extractResult.title}
+              onAdapted={handleAdapted}
+              isLoading={isLoading}
+              setIsLoading={setIsLoading}
+            />
+          </div>
+        )}
       </main>
     </div>
   );
+}
+
+function StepBadge({ number, label, active, done }: { number: number; label: string; active: boolean; done: boolean }) {
+  const bgClass = active
+    ? "bg-gray-900 text-white"
+    : done
+    ? "bg-green-100 text-green-800"
+    : "bg-gray-100 text-gray-400";
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium ${bgClass}`}>
+        {done ? "✓" : number}
+      </span>
+      <span className={`text-sm font-medium ${active ? "text-gray-900" : done ? "text-green-700" : "text-gray-400"}`}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function StepDivider() {
+  return <div className="flex-1 h-px bg-gray-200 max-w-[60px]" />;
 }
