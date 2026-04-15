@@ -26,174 +26,125 @@ const PERSONAS: Record<string, any> = {
 };
 
 export async function POST(request: NextRequest) {
-  const { documentId, audienceId, formatId } = await request.json();
+  try {
+    const { documentId, audienceId, formatId } = await request.json();
 
-  if (!documentId || !audienceId || !formatId) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-  }
-
-  // Cached demos — return JSON instantly
-  const cached = getCachedAdaptation(documentId, audienceId);
-  if (cached) {
-    return NextResponse.json({
-      adaptationId: `demo-${Date.now()}`,
-      documentId, audienceId, formatId,
-      audienceName: cached.audienceName,
-      formatName: cached.formatName,
-      adaptedContent: cached.adaptedContent,
-      rationale: cached.rationale,
-      reliability: cached.reliability,
-      wordCount: cached.adaptedContent.split(/\s+/).length,
-      generationTime: "0.1s",
-    });
-  }
-
-  // Real adaptation — stream progress via SSE
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      const send = (event: string, data: any) => {
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
-      };
-      const startTime = Date.now();
-      const elapsed = () => ((Date.now() - startTime) / 1000).toFixed(1);
-      const DEADLINE_MS = 55000;
-
-      try {
-        // Step 1: Read from Neo4j
-        send("progress", { step: "Reading structure...", elapsed: elapsed() });
-
-        let doc: any, sections: any[] = [], concepts: any[] = [];
-
-        if (isDemoDoc(documentId)) {
-          doc = { title: "Demo Document" };
-          sections = [{ title: "Section 1", content: "Demo content" }];
-          concepts = [];
-        } else {
-          const docRows = await read(
-            `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section) RETURN d, s ORDER BY s.orderIndex`,
-            { docId: documentId }
-          );
-          if (docRows.length === 0) {
-            send("error", { error: "Document not found. Please re-upload." });
-            controller.close(); return;
-          }
-          doc = toPlain((docRows[0] as Record<string, unknown>).d);
-          sections = docRows.map((row) => toPlain((row as Record<string, unknown>).s));
-
-          const conceptRows = await read(
-            `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section)-[:MENTIONS_CONCEPT]->(c:Concept) RETURN DISTINCT c`,
-            { docId: documentId }
-          );
-          concepts = conceptRows.map((row) => toPlain((row as Record<string, unknown>).c));
-        }
-
-        // Step 2: Get persona + format
-        send("progress", { step: "Adapting for persona...", elapsed: elapsed() });
-
-        const profile = PERSONAS[audienceId];
-        if (!profile) { send("error", { error: `Persona '${audienceId}' not found` }); controller.close(); return; }
-
-        const formatRows = await read(`MATCH (f:OutputFormat {id: $formatId}) RETURN f`, { formatId });
-        if (formatRows.length === 0) { send("error", { error: "Output format not found" }); controller.close(); return; }
-        const format = toPlain((formatRows[0] as Record<string, unknown>).f) as OutputFormat;
-
-        // Step 3: Claude adaptation
-        const message = await anthropic.messages.create({
-          model: "claude-sonnet-4-6",
-          max_tokens: 2048,
-          system: ADAPTATION_SYSTEM_PROMPT(profile as AudienceProfile, format),
-          messages: [{ role: "user", content: ADAPTATION_USER_PROMPT(doc.title, sections.map((s: any) => ({ ...s, content: s.content?.substring(0, 300) || s.content })), concepts, format) }],
-        });
-
-        const textBlock = message.content.find((b) => b.type === "text");
-        if (!textBlock) { send("error", { error: "No response from Claude" }); controller.close(); return; }
-
-        let jsonStr = textBlock.text.trim().replace(/^```(?:json)?\s*\n?/, "").replace(/\n?\s*```\s*$/, "");
-        const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-        if (jsonMatch) jsonStr = jsonMatch[0];
-
-        let adapted;
-        try {
-          adapted = JSON.parse(jsonStr);
-        } catch {
-          const fixed = jsonStr
-            .replace(/[\x00-\x1f]/g, (ch) => ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : ch === '\t' ? '\\t' : '')
-            .replace(/\\'/g, "'");
-          try {
-            adapted = JSON.parse(fixed);
-          } catch {
-            // Last resort: extract adaptedContent from the raw text and build minimal rationale
-            const contentMatch = jsonStr.match(/"adaptedContent"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"rationale|"\s*\})/);
-            if (contentMatch) {
-              adapted = {
-                adaptedContent: contentMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'),
-                rationale: { kept: [], simplified: [], expanded: [], cut: [], terminologyChanges: [], gaps: ["[System] Full rationale unavailable — JSON parse error. Content was extracted successfully."] }
-              };
-            } else {
-              // Absolute last resort: treat entire response as adapted content
-              adapted = {
-                adaptedContent: textBlock.text,
-                rationale: { kept: [], simplified: [], expanded: [], cut: [], terminologyChanges: [], gaps: ["[System] Response was not in expected JSON format. Raw output shown."] }
-              };
-            }
-          }
-        }
-
-        send("progress", { step: "Analyzing gaps...", elapsed: elapsed() });
-
-        // Step 4: LLM Judge (skip if close to deadline)
-        const sourceText = sections.map((s: any) => `${s.title}: ${s.content}`).join("\n");
-        let reliability = 0;
-        let missedGaps: string[] = [];
-        if (Date.now() - startTime < DEADLINE_MS - 15000) {
-          send("progress", { step: "Validating with independent model...", elapsed: elapsed() });
-          try {
-            const judgeResult = await judgeAdaptation(sourceText, adapted.adaptedContent, profile.name);
-            reliability = judgeResult.reliability;
-            missedGaps = judgeResult.missedGaps || [];
-          } catch { reliability = 0; }
-        } else {
-          send("progress", { step: "Skipping validation (time constrained)...", elapsed: elapsed() });
-          reliability = 0;
-        }
-
-        send("progress", { step: "Scoring reliability...", elapsed: elapsed() });
-
-        const adaptationId = `adapt-${Date.now()}`;
-        const wordCount = adapted.adaptedContent.split(/\s+/).length;
-        const generationTime = `${elapsed()}s`;
-
-        // Fire-and-forget Neo4j write
-        const termChanges = (adapted.rationale.terminologyChanges || []).map(
-          (tc: { original: string; adapted: string; reason: string }) => `${tc.original} → ${tc.adapted}: ${tc.reason}`
-        );
-        write(
-          `MATCH (d:Document {id: $docId}) MATCH (f:OutputFormat {id: $formatId})
-           CREATE (ad:Adaptation { id: $adaptationId, adaptedContent: $content, rationaleKept: $kept, rationaleCut: $cut, rationaleSimplified: $simplified, rationaleExpanded: $expanded, terminologyChanges: $termChanges, createdAt: datetime() })
-           CREATE (d)-[:HAS_ADAPTATION]->(ad) CREATE (ad)-[:USES_FORMAT]->(f)
-           WITH ad MERGE (a:AudienceProfile {id: $audienceId}) CREATE (ad)-[:ADAPTED_FOR]->(a)`,
-          { docId: documentId, formatId, audienceId, adaptationId, content: adapted.adaptedContent, kept: adapted.rationale.kept || [], cut: adapted.rationale.cut || [], simplified: adapted.rationale.simplified || [], expanded: adapted.rationale.expanded || [], termChanges }
-        ).catch(() => {});
-
-        // Final result
-        send("result", {
-          adaptationId, documentId, audienceId, formatId,
-          audienceName: profile.name,
-          formatName: format.name,
-          adaptedContent: adapted.adaptedContent,
-          rationale: { ...adapted.rationale, gaps: [...(adapted.rationale.gaps || []), ...missedGaps.map((g: string) => `[Judge] ${g}`)] },
-          reliability, wordCount, generationTime,
-        });
-
-      } catch (error) {
-        send("error", { error: error instanceof Error ? error.message : "Unknown error" });
-      }
-      controller.close();
+    if (!documentId || !audienceId || !formatId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
-  });
 
-  return new Response(stream, {
-    headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive" },
-  });
+    const cached = getCachedAdaptation(documentId, audienceId);
+    if (cached) {
+      return NextResponse.json({
+        adaptationId: `demo-${Date.now()}`,
+        documentId, audienceId, formatId,
+        audienceName: cached.audienceName,
+        formatName: cached.formatName,
+        adaptedContent: cached.adaptedContent,
+        rationale: cached.rationale,
+        reliability: cached.reliability,
+        wordCount: cached.adaptedContent.split(/\s+/).length,
+        generationTime: "0.1s",
+      });
+    }
+
+    const startTime = Date.now();
+
+    let doc: any, sections: any[] = [], concepts: any[] = [];
+
+    if (isDemoDoc(documentId)) {
+      doc = { title: "Demo Document" };
+      sections = [{ title: "Section 1", content: "Demo content" }];
+      concepts = [];
+    } else {
+      const docRows = await read(
+        `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section) RETURN d, s ORDER BY s.orderIndex`,
+        { docId: documentId }
+      );
+      if (docRows.length === 0) {
+        return NextResponse.json({ error: "Document not found. Please re-upload." }, { status: 404 });
+      }
+      doc = toPlain((docRows[0] as Record<string, unknown>).d);
+      sections = docRows.map((row) => toPlain((row as Record<string, unknown>).s));
+
+      const conceptRows = await read(
+        `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section)-[:MENTIONS_CONCEPT]->(c:Concept) RETURN DISTINCT c`,
+        { docId: documentId }
+      );
+      concepts = conceptRows.map((row) => toPlain((row as Record<string, unknown>).c));
+    }
+
+    const profile = PERSONAS[audienceId];
+    if (!profile) return NextResponse.json({ error: `Persona not found` }, { status: 404 });
+
+    const formatRows = await read(`MATCH (f:OutputFormat {id: $formatId}) RETURN f`, { formatId });
+    if (formatRows.length === 0) return NextResponse.json({ error: "Format not found" }, { status: 404 });
+    const format = toPlain((formatRows[0] as Record<string, unknown>).f) as OutputFormat;
+
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 2048,
+      system: ADAPTATION_SYSTEM_PROMPT(profile as AudienceProfile, format),
+      messages: [{ role: "user", content: ADAPTATION_USER_PROMPT(doc.title, sections.map((s: any) => ({ ...s, content: s.content?.substring(0, 300) || s.content })), concepts, format) }],
+    });
+
+    const textBlock = message.content.find((b) => b.type === "text");
+    if (!textBlock) return NextResponse.json({ error: "No response from Claude" }, { status: 500 });
+
+    let jsonStr = textBlock.text.trim().replace(/^```(?:json)?\s*\n?/, "").replace(/\n?\s*```\s*$/, "");
+    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+    if (jsonMatch) jsonStr = jsonMatch[0];
+
+    let adapted;
+    try {
+      adapted = JSON.parse(jsonStr);
+    } catch {
+      const fixed = jsonStr.replace(/[\x00-\x1f]/g, (ch) => ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : ch === '\t' ? '\\t' : '');
+      try { adapted = JSON.parse(fixed); } catch {
+        adapted = {
+          adaptedContent: textBlock.text,
+          rationale: { kept: [], simplified: [], expanded: [], cut: [], terminologyChanges: [], gaps: ["[System] Raw output — JSON parse error."] }
+        };
+      }
+    }
+
+    // Judge — skip if past 45s
+    const sourceText = sections.map((s: any) => `${s.title}: ${s.content}`).join("\n");
+    let reliability = 0;
+    let missedGaps: string[] = [];
+    if (Date.now() - startTime < 45000) {
+      try {
+        const judgeResult = await judgeAdaptation(sourceText, adapted.adaptedContent, profile.name);
+        reliability = judgeResult.reliability;
+        missedGaps = judgeResult.missedGaps || [];
+      } catch { reliability = 0; }
+    }
+
+    const generationTime = `${((Date.now() - startTime) / 1000).toFixed(1)}s`;
+    const wordCount = adapted.adaptedContent.split(/\s+/).length;
+    const adaptationId = `adapt-${Date.now()}`;
+
+    // Fire-and-forget Neo4j write
+    const termChanges = (adapted.rationale.terminologyChanges || []).map(
+      (tc: { original: string; adapted: string; reason: string }) => `${tc.original} → ${tc.adapted}: ${tc.reason}`
+    );
+    write(
+      `MATCH (d:Document {id: $docId}) MATCH (f:OutputFormat {id: $formatId})
+       CREATE (ad:Adaptation { id: $adaptationId, adaptedContent: $content, rationaleKept: $kept, rationaleCut: $cut, rationaleSimplified: $simplified, rationaleExpanded: $expanded, terminologyChanges: $termChanges, createdAt: datetime() })
+       CREATE (d)-[:HAS_ADAPTATION]->(ad) CREATE (ad)-[:USES_FORMAT]->(f)
+       WITH ad MERGE (a:AudienceProfile {id: $audienceId}) CREATE (ad)-[:ADAPTED_FOR]->(a)`,
+      { docId: documentId, formatId, audienceId, adaptationId, content: adapted.adaptedContent, kept: adapted.rationale.kept || [], cut: adapted.rationale.cut || [], simplified: adapted.rationale.simplified || [], expanded: adapted.rationale.expanded || [], termChanges }
+    ).catch(() => {});
+
+    return NextResponse.json({
+      adaptationId, documentId, audienceId, formatId,
+      audienceName: profile.name,
+      formatName: format.name,
+      adaptedContent: adapted.adaptedContent,
+      rationale: { ...adapted.rationale, gaps: [...(adapted.rationale.gaps || []), ...missedGaps.map((g: string) => `[Judge] ${g}`)] },
+      reliability, wordCount, generationTime,
+    });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+  }
 }

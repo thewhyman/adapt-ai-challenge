@@ -84,7 +84,7 @@ export default function AdaptSelector({
   const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [progressSteps, setProgressSteps] = useState<{ step: string; elapsed: string }[]>([]);
+  const [activeStep, setActiveStep] = useState(-1);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -117,7 +117,14 @@ export default function AdaptSelector({
 
     setError(null);
     setIsLoading(true);
-    setProgressSteps([]);
+    setActiveStep(0);
+
+    const timers = [
+      setTimeout(() => setActiveStep(1), 1500),
+      setTimeout(() => setActiveStep(2), 20000),
+      setTimeout(() => setActiveStep(3), 25000),
+      setTimeout(() => setActiveStep(4), 35000),
+    ];
 
     try {
       const res = await fetch("/api/adapt", {
@@ -126,70 +133,28 @@ export default function AdaptSelector({
         body: JSON.stringify({ documentId, audienceId: selectedAudience, formatId: selectedFormat }),
       });
 
-      const contentType = res.headers.get("content-type") || "";
+      const text = await res.text();
+      let result;
+      try { result = JSON.parse(text); } catch { throw new Error("Server returned unexpected response. Please retry."); }
+      if (!res.ok) throw new Error(result.error ?? `Failed (${res.status})`);
 
-      if (contentType.includes("text/event-stream")) {
-        const reader = res.body!.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-
-          const lines = buffer.split("\n\n");
-          buffer = lines.pop() || "";
-
-          for (const block of lines) {
-            const eventMatch = block.match(/^event: (\w+)\ndata: (.+)$/s);
-            if (!eventMatch) continue;
-            const [, event, dataStr] = eventMatch;
-            const data = JSON.parse(dataStr);
-
-            if (event === "progress") {
-              setProgressSteps(prev => {
-                const exists = prev.find(p => p.step === data.step);
-                if (exists) return prev.map(p => p.step === data.step ? { step: data.step, elapsed: data.elapsed || "" } : p);
-                return [...prev, { step: data.step, elapsed: data.elapsed || "" }];
-              });
-            } else if (event === "error") {
-              throw new Error(data.error);
-            } else if (event === "result") {
-              onAdapted({
-                adaptationId: data.adaptationId,
-                audienceName: data.audienceName,
-                formatName: data.formatName,
-                adaptedContent: data.adaptedContent,
-                reliability: data.reliability,
-                wordCount: data.wordCount,
-                generationTime: data.generationTime,
-                rationale: { ...data.rationale, gaps: data.rationale.gaps || [] },
-              });
-            }
-          }
-        }
-      } else {
-        const text = await res.text();
-        let result;
-        try { result = JSON.parse(text); } catch { throw new Error("Unexpected response."); }
-        if (!res.ok) throw new Error(result.error ?? `Failed (${res.status})`);
-        onAdapted({
-          adaptationId: result.adaptationId,
-          audienceName: result.audienceName,
-          formatName: result.formatName,
-          adaptedContent: result.adaptedContent,
-          reliability: result.reliability,
-          wordCount: result.wordCount,
-          generationTime: result.generationTime,
-          rationale: { ...result.rationale, gaps: result.rationale?.gaps || [] },
-        });
-      }
+      setActiveStep(ALL_ADAPT_STEPS.length);
+      onAdapted({
+        adaptationId: result.adaptationId,
+        audienceName: result.audienceName,
+        formatName: result.formatName,
+        adaptedContent: result.adaptedContent,
+        reliability: result.reliability,
+        wordCount: result.wordCount,
+        generationTime: result.generationTime,
+        rationale: { ...result.rationale, gaps: result.rationale?.gaps || [] },
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Adaptation failed");
     } finally {
+      timers.forEach(clearTimeout);
       setIsLoading(false);
-      setProgressSteps([]);
+      setActiveStep(-1);
     }
   }
 
@@ -312,28 +277,23 @@ export default function AdaptSelector({
         Adapt
       </button>
 
-      {isLoading && (
+      {isLoading && activeStep >= 0 && (
         <div className="flex flex-col items-center gap-4 w-full max-w-xs mx-auto mt-6">
           <svg className="w-8 h-8 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
           <div className="w-full space-y-3">
-            {ALL_ADAPT_STEPS.map((label, i) => {
-              const match = progressSteps.find(p => p.step.startsWith(label));
-              const isCompleted = match && progressSteps.some((p, j) => j > progressSteps.indexOf(match!) && p.step !== match!.step);
-              const isActive = match && !isCompleted;
-              return (
-                <div key={i} className="flex items-center gap-3 text-sm">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors text-xs ${
-                    isCompleted ? "bg-emerald-500/20 text-emerald-400" : isActive ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-zinc-800 text-zinc-600"
-                  }`}>
-                    {isCompleted ? "✓" : isActive ? "●" : "○"}
-                  </div>
-                  <span className={`font-medium ${isCompleted ? "text-zinc-200" : isActive ? "text-zinc-200" : "text-zinc-600"}`}>{label}</span>
+            {ALL_ADAPT_STEPS.map((label, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors text-xs ${
+                  i < activeStep ? "bg-emerald-500/20 text-emerald-400" : i === activeStep ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-zinc-800 text-zinc-600"
+                }`}>
+                  {i < activeStep ? "✓" : i === activeStep ? "●" : "○"}
                 </div>
-              );
-            })}
+                <span className={`font-medium ${i <= activeStep ? "text-zinc-200" : "text-zinc-600"}`}>{label}</span>
+              </div>
+            ))}
           </div>
           <p className="text-[11px] text-zinc-600 mt-1">running on micro-infra to conserve costs</p>
         </div>
