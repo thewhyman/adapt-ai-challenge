@@ -227,7 +227,8 @@ export async function POST(request: NextRequest) {
         `${tc.original} → ${tc.adapted}: ${tc.reason}`
     );
 
-    await write(
+    // Fire-and-forget Neo4j write — don't block the response
+    write(
       `MATCH (d:Document {id: $docId})
        MATCH (a:AudienceProfile {id: $audienceId})
        MATCH (f:OutputFormat {id: $formatId})
@@ -256,19 +257,9 @@ export async function POST(request: NextRequest) {
         expanded: adapted.rationale.expanded || [],
         termChanges,
       }
-    );
+    ).catch(() => {});
 
-    // Multi-model hallucination judge (OpenAI GPT validates Claude's output)
-    const sourceText = sections.map((s: any) => `${s.title}: ${s.content}`).join("\n");
-    let reliability = 0;
-    let judgeResult = null;
-    try {
-      judgeResult = await judgeAdaptation(sourceText, adapted.adaptedContent, profile.name);
-      reliability = judgeResult.reliability;
-    } catch {
-      reliability = 0;
-    }
-
+    // Return immediately — don't wait for judge (saves 10-15s on Vercel)
     return NextResponse.json({
       adaptationId,
       documentId,
@@ -277,15 +268,8 @@ export async function POST(request: NextRequest) {
       formatId,
       formatName: format.name,
       adaptedContent: adapted.adaptedContent,
-      rationale: {
-        ...adapted.rationale,
-        gaps: [
-          ...(adapted.rationale.gaps || []),
-          ...(judgeResult?.missedGaps?.map((g: string) => `[Judge-identified] ${g}`) || [])
-        ]
-      },
-      reliability,
-      hallucinations: judgeResult?.hallucinations || [],
+      rationale: adapted.rationale,
+      reliability: 0,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
