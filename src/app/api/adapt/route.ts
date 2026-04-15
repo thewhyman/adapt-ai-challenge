@@ -116,15 +116,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Read audience profile (Co-Dialectic Persona Fusion Engine)
-    const CO_DIALECTIC_PERSONAS = [
-      { id: "aud-steve-jony", name: "The Visionary Executive (Steve Jobs + Jony Ive)", technicalDepth: 3 as const, lengthBudget: "brief" as const, focusAreas: ["User Experience", "Product Market Fit", "Simplification", "Why It Matters"], terminologyPreference: "accessible" as const, decisionContext: "Focuses entirely on why this matters to the human using it, stripping away all technical bloat or generic corporate speak. Thinks in product vision and human impact." },
-      { id: "aud-shreyas-linus", name: "The Critical Builder (Linus Torvalds + Shreyas Doshi)", technicalDepth: 5 as const, lengthBudget: "detailed" as const, focusAreas: ["Architecture", "Edge Cases", "Scalability", "Trade-offs", "Failure Modes"], terminologyPreference: "technical" as const, decisionContext: "Ruthlessly pragmatic. Demands exact technical architecture, failure modes, and why this doesn't over-engineer the core problem. Show the code-level truth." },
-      { id: "aud-gary-seth", name: "The Growth Marketer (Gary Vee + Seth Godin)", technicalDepth: 2 as const, lengthBudget: "moderate" as const, focusAreas: ["Distribution", "Platform-Native Content", "Audience Empathy", "Social Proof", "Content That Spreads"], terminologyPreference: "accessible" as const, decisionContext: "Thinks in hooks, distribution channels, and audience psychology. Adapts content for social platforms, marketing campaigns, and customer-facing formats. Makes every piece of content work harder across LinkedIn, Twitter, blogs, and sales decks." }
-    ];
-    
-    const profile = CO_DIALECTIC_PERSONAS.find(p => p.id === audienceId);
+    // Fetch persona profiles from our own profiles API (single source of truth)
+    const profilesRes = await fetch(new URL(`/api/profiles?documentId=${encodeURIComponent(documentId)}`, request.url));
+    const profilesData = await profilesRes.json();
+    const allAudiences = profilesData.audiences || [];
+
+    const profile = allAudiences.find((p: any) => p.id === audienceId);
     if (!profile) {
-      return NextResponse.json({ error: "Co-Dialectic Audience profile not found" }, { status: 404 });
+      return NextResponse.json({ error: `Audience profile '${audienceId}' not found for document '${documentId}'` }, { status: 404 });
     }
 
     // 4. Read output format

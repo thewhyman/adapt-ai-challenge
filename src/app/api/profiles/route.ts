@@ -143,16 +143,16 @@ const DEMO_PERSONA_MAP: Record<string, string[]> = {
   "doc-demo-health": ["aud-health-cmo", "aud-health-researcher", "aud-health-advocate"],
 };
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const documentId = searchParams.get("documentId");
 
-    let personas = CO_DIALECTIC_PERSONAS;
-    if (documentId && DEMO_PERSONA_MAP[documentId]) {
-      const allowedIds = DEMO_PERSONA_MAP[documentId];
-      personas = CO_DIALECTIC_PERSONAS.filter(p => allowedIds.includes(p.id));
-    }
+    const DEFAULT_PERSONAS = ["aud-steve-jony", "aud-shreyas-linus", "aud-gary-seth"];
+    const allowedIds = (documentId && DEMO_PERSONA_MAP[documentId]) ? DEMO_PERSONA_MAP[documentId] : DEFAULT_PERSONAS;
+    const personas = CO_DIALECTIC_PERSONAS.filter(p => allowedIds.includes(p.id));
 
     const formatsRows = await read(`MATCH (f:OutputFormat) RETURN f ORDER BY f.name`);
 
