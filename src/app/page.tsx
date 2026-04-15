@@ -208,7 +208,7 @@ export default function Home() {
       </main>
 
       <footer className="relative z-10 border-t border-white/[0.04] py-4 text-center">
-        <p className="text-[11px] text-zinc-600">Adapt AI · Built for AI Fund Builder Challenge · Last updated Apr 15, 2026</p>
+        <p className="text-[11px] text-zinc-600">Adapt AI · AI Fund Builder Challenge · deploy 2026-04-15 03:19 PDT</p>
       </footer>
     </div>
   );
