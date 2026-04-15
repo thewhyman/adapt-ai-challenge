@@ -154,7 +154,6 @@ export default function AdaptSelector({
     } finally {
       timers.forEach(clearTimeout);
       setIsLoading(false);
-      setActiveStep(-1);
     }
   }
 
