@@ -27,6 +27,7 @@ interface ResultsViewProps {
   formatName: string;
   adaptedContent: string;
   rationale: Rationale;
+  reliability?: number;
   onReset: () => void;
   onNewAdaptation: () => void;
 }
@@ -141,6 +142,7 @@ export default function ResultsView({
   formatName,
   adaptedContent,
   rationale,
+  reliability,
   onReset,
   onNewAdaptation,
 }: ResultsViewProps) {
@@ -167,9 +169,16 @@ export default function ResultsView({
             <span className="mx-2 text-zinc-700 font-normal">&middot;</span>
             <span className="font-medium text-zinc-400">{formatName}</span>
           </h1>
-          <p className="text-sm text-emerald-400 mt-0.5 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
-            Adaptation complete
+          <p className="text-sm mt-0.5 flex items-center gap-3">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
+              Adaptation complete
+            </span>
+            {reliability && (
+              <span className={`flex items-center gap-1.5 font-semibold ${reliability >= 90 ? 'text-emerald-400' : reliability >= 70 ? 'text-amber-400' : 'text-red-400'}`}>
+                Reliability: {reliability}%
+              </span>
+            )}
           </p>
         </div>
         <div className="flex gap-3">

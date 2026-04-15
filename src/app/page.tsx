@@ -20,6 +20,7 @@ interface AdaptResult {
   audienceName: string;
   formatName: string;
   adaptedContent: string;
+  reliability?: number;
   rationale: {
     kept: string[];
     simplified: string[];
@@ -35,6 +36,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [extractResult, setExtractResult] = useState<ExtractResult | null>(null);
   const [adaptResult, setAdaptResult] = useState<AdaptResult | null>(null);
+
+  const DEMOS = [
+    { id: "doc-demo-landing", title: "Landing AI: Visual Inspection Report", documentType: "Quality Report", sectionCount: 5, conceptCount: 4, tag: "Manufacturing AI", tagClass: "bg-orange-500/20 text-orange-400", description: "Computer vision defect detection for PCB assembly" },
+    { id: "doc-demo-gaia", title: "Gaia Dynamics: Tariff Compliance Brief", documentType: "Compliance Brief", sectionCount: 4, conceptCount: 5, tag: "Trade Compliance", tagClass: "bg-cyan-500/20 text-cyan-400", description: "AI-driven tariff analysis for US importers" },
+    { id: "doc-demo-health", title: "Clinical Trial Protocol: AI Drug Discovery", documentType: "Clinical Protocol", sectionCount: 6, conceptCount: 5, tag: "Healthcare AI", tagClass: "bg-emerald-500/20 text-emerald-400", description: "Phase II trial for AI-identified antidepressant" },
+    { id: "doc-eval-demo", title: "Palantir Apollo: Edge Deployment", documentType: "Architecture Brief", sectionCount: 3, conceptCount: 3, tag: "Defense Tech", tagClass: "bg-indigo-500/20 text-indigo-400", description: "Autonomous deployment to air-gapped environments" },
+  ];
 
   function handleExtracted(result: ExtractResult) {
     setExtractResult(result);
@@ -57,14 +65,8 @@ export default function Home() {
     setStep("select");
   }
 
-  function handleEvalDemo() {
-    setExtractResult({
-      documentId: "doc-eval-demo",
-      title: "Palantir Apollo: Continuous Deployment for the Edge",
-      documentType: "Architecture Brief",
-      sectionCount: 3,
-      conceptCount: 3,
-    });
+  function handleDemoClick(id: string, title: string, docType: string, sections: number, concepts: number) {
+    setExtractResult({ documentId: id, title, documentType: docType, sectionCount: sections, conceptCount: concepts });
     setStep("select");
   }
 
@@ -116,20 +118,36 @@ export default function Home() {
 
         <div className="transition-all duration-500 ease-out transform">
           {step === "upload" && (
-            <div className="glass-panel rounded-2xl p-8 max-w-2xl mx-auto animate-fade-in">
-              <FileUpload
-                onExtracted={handleExtracted}
-                isLoading={isLoading}
-                setIsLoading={setIsLoading}
-              />
-              <div className="mt-6 pt-6 border-t border-white/[0.06] text-center">
-                <button
-                  type="button"
-                  onClick={handleEvalDemo}
-                  className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
-                >
-                  Or try the 1-Click Evaluator Demo (Palantir Apollo brief)
-                </button>
+            <div className="space-y-8 animate-fade-in">
+              {/* Demo cards */}
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4 text-center">Try a demo — AI Fund portfolio verticals</h3>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+                  {DEMOS.map((d) => (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => handleDemoClick(d.id, d.title, d.documentType, d.sectionCount, d.conceptCount)}
+                      className="glass-panel rounded-xl p-4 text-left hover:border-white/20 transition-all group"
+                    >
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${d.tagClass}`}>{d.tag}</span>
+                      <p className="text-sm font-semibold text-zinc-100 mt-2 group-hover:text-white transition-colors">{d.title}</p>
+                      <p className="text-xs text-zinc-500 mt-1">{d.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Upload */}
+              <div>
+                <p className="text-sm text-zinc-500 text-center mb-4">Or upload your own document</p>
+                <div className="glass-panel rounded-2xl p-8 max-w-2xl mx-auto">
+                  <FileUpload
+                    onExtracted={handleExtracted}
+                    isLoading={isLoading}
+                    setIsLoading={setIsLoading}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -173,6 +191,7 @@ export default function Home() {
                 formatName={adaptResult.formatName}
                 adaptedContent={adaptResult.adaptedContent}
                 rationale={adaptResult.rationale}
+                reliability={adaptResult.reliability}
                 onReset={handleReset}
                 onNewAdaptation={handleNewAdaptation}
               />

@@ -131,6 +131,7 @@ export default function AdaptSelector({
         audienceName: result.audienceName,
         formatName: result.formatName,
         adaptedContent: result.adaptedContent,
+        reliability: result.reliability,
         rationale: { ...result.rationale, gaps: result.rationale.gaps || [] },
       });
     } catch (err) {
