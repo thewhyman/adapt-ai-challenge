@@ -107,8 +107,14 @@ export default function FileUpload({ onExtracted, isLoading, setIsLoading }: Fil
       try {
         data = JSON.parse(text);
       } catch {
-        console.error("Non-JSON response:", text.substring(0, 200));
-        setError("Server returned an unexpected response. Try incognito mode if browser extensions interfere, or try a smaller file.");
+        console.error("Non-JSON response (status " + response.status + "):", text.substring(0, 500));
+        if (response.status === 504 || response.status === 502) {
+          setError(`Server timed out (${response.status}). Try a smaller file (under 10 pages).`);
+        } else if (text.includes("FUNCTION_INVOCATION_TIMEOUT")) {
+          setError("Function timed out. Try a smaller file (under 10 pages).");
+        } else {
+          setError(`Server error (${response.status}). Try a smaller file or incognito mode.`);
+        }
         return;
       }
 
