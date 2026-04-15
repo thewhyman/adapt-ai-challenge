@@ -227,7 +227,7 @@ export default function ResultsView({
       {/* Tab content */}
       {activeTab === "content" && (
         <div className="glass-panel rounded-2xl p-8 sm:p-10 animate-fade-in">
-          <article className="prose prose-invert prose-sm sm:prose-base max-w-none prose-headings:text-zinc-50 prose-headings:font-bold prose-headings:tracking-tight prose-p:text-zinc-300 prose-p:leading-relaxed prose-strong:text-zinc-100 prose-li:text-zinc-300 prose-li:leading-relaxed prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:text-indigo-300 prose-blockquote:border-indigo-500/30 prose-blockquote:text-zinc-400 prose-code:text-indigo-300 prose-code:bg-indigo-500/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-hr:border-white/[0.06]">
+          <article className="prose prose-invert prose-sm max-w-none prose-headings:text-zinc-50 prose-headings:font-semibold prose-headings:text-base prose-h2:text-lg prose-p:text-zinc-300 prose-p:text-[13px] prose-p:leading-relaxed prose-strong:text-zinc-100 prose-li:text-zinc-300 prose-li:text-[13px] prose-li:leading-relaxed prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:text-indigo-300 prose-blockquote:border-indigo-500/30 prose-blockquote:text-zinc-400 prose-blockquote:text-[13px] prose-code:text-indigo-300 prose-code:bg-indigo-500/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-hr:border-white/[0.06]">
             <ReactMarkdown>{adaptedContent}</ReactMarkdown>
           </article>
         </div>
