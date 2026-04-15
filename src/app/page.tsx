@@ -95,7 +95,7 @@ export default function Home() {
             <div className="flex justify-center items-center gap-3 animate-fade-in-delay-2">
               <StepBadge number={1} label="Extract Ontology" active={step === "upload"} done={step !== "upload"} />
               <StepDivider />
-              <StepBadge number={2} label="Co-Dialectic Target" active={step === "select"} done={step === "results"} />
+              <StepBadge number={2} label="Co-Dialectic Target" active={step === "select"} done={false} />
               <StepDivider />
               <StepBadge number={3} label="Synthesis" active={step === "results"} done={false} />
             </div>
