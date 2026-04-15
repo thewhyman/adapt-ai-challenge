@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { read, toPlain } from "@/lib/neo4j";
 
 const CO_DIALECTIC_PERSONAS = [
   {
     id: "aud-steve-jony",
-    name: "The Visionary Executive (Steve Jobs + Jony Ive)",
+    name: "Visionary Executive (Steve Jobs + Jony Ive)",
     roleName: "Product Vision & Design",
     orgLevel: "CEO / CPO",
     technicalDepth: 3,
@@ -15,7 +15,7 @@ const CO_DIALECTIC_PERSONAS = [
   },
   {
     id: "aud-shreyas-linus",
-    name: "The Critical Builder (Linus Torvalds + Shreyas Doshi)",
+    name: "Critical Builder (Linus Torvalds + Shreyas Doshi)",
     roleName: "Architecture & Engineering",
     orgLevel: "Principal / Staff Engineer",
     technicalDepth: 5,
@@ -26,7 +26,7 @@ const CO_DIALECTIC_PERSONAS = [
   },
   {
     id: "aud-gary-seth",
-    name: "The Growth Marketer (Gary Vee + Seth Godin)",
+    name: "Growth Marketer (Gary Vee + Seth Godin)",
     roleName: "Marketing & Distribution",
     orgLevel: "CMO / Head of Growth",
     technicalDepth: 2,
@@ -70,14 +70,28 @@ const CO_DIALECTIC_PERSONAS = [
   }
 ];
 
-export async function GET() {
+const DEMO_PERSONA_MAP: Record<string, string[]> = {
+  "doc-demo-landing": ["aud-andrew-ng", "aud-eli-chen", "aud-mike-rubino"],
+  "doc-eval-demo": ["aud-steve-jony", "aud-shreyas-linus", "aud-gary-seth"],
+  "doc-demo-gaia": ["aud-steve-jony", "aud-shreyas-linus", "aud-gary-seth"],
+  "doc-demo-health": ["aud-steve-jony", "aud-shreyas-linus", "aud-gary-seth"],
+};
+
+export async function GET(request: NextRequest) {
   try {
-    // We override the DB audience lookup to inject the static Co-Dialectic Personas
-    // but still fetch the dynamic Output Formats from Neo4j.
+    const { searchParams } = new URL(request.url);
+    const documentId = searchParams.get("documentId");
+
+    let personas = CO_DIALECTIC_PERSONAS;
+    if (documentId && DEMO_PERSONA_MAP[documentId]) {
+      const allowedIds = DEMO_PERSONA_MAP[documentId];
+      personas = CO_DIALECTIC_PERSONAS.filter(p => allowedIds.includes(p.id));
+    }
+
     const formatsRows = await read(`MATCH (f:OutputFormat) RETURN f ORDER BY f.name`);
-    
+
     return NextResponse.json({
-      audiences: CO_DIALECTIC_PERSONAS,
+      audiences: personas,
       formats: formatsRows.map((row) => toPlain((row as Record<string, unknown>).f)),
     });
   } catch (error) {

@@ -83,7 +83,7 @@ export default function AdaptSelector({
 
     async function loadProfiles() {
       try {
-        const res = await fetch("/api/profiles");
+        const res = await fetch(`/api/profiles?documentId=${encodeURIComponent(documentId)}`);
         if (!res.ok) {
           throw new Error(`Failed to load profiles (${res.status})`);
         }
@@ -184,14 +184,16 @@ export default function AdaptSelector({
                     : "border-zinc-700/50 bg-zinc-900/50 hover:border-zinc-600 hover:bg-zinc-900/80"
                 }`}
               >
-                <p className="font-medium text-zinc-100">
-                  {a.name}
+                <p className="text-base font-bold text-zinc-50">
+                  {a.name.split('(')[0].trim()}
                 </p>
-                <p className="mt-0.5 text-xs text-zinc-500">
-                  {a.roleName} &middot; {a.orgLevel}
-                </p>
-                <p className="mt-2 text-sm text-zinc-400">
-                  {audienceDescription(a)}
+                {a.name.includes('(') && (
+                  <p className="text-xs text-indigo-400 font-medium mt-0.5">
+                    {a.name.match(/\(([^)]+)\)/)?.[1]}
+                  </p>
+                )}
+                <p className="mt-1.5 text-xs text-zinc-500">
+                  {a.roleName} · {a.orgLevel}
                 </p>
               </button>
             );
