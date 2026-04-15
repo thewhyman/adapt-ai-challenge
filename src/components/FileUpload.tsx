@@ -277,7 +277,7 @@ function LoadingIndicator() {
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-zinc-600 mt-1">{elapsed}s · Running on Vercel free-tier infra</p>
+      <p className="text-[10px] text-zinc-600 mt-1">{elapsed}s · Running on micro-infra to conserve costs</p>
     </div>
   );
 }
