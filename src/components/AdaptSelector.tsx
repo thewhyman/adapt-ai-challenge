@@ -245,10 +245,13 @@ export default function AdaptSelector({
         </div>
       </fieldset>
 
-      {/* Adapt error */}
+      {/* Adapt error with retry */}
       {error && (
-        <div className="rounded-xl border border-red-800 bg-red-950/50 p-4 text-sm text-red-400">
-          {error}
+        <div className="rounded-xl border border-red-800 bg-red-950/50 p-4 flex items-center justify-between">
+          <span className="text-sm text-red-400">{error}</span>
+          <button type="button" onClick={handleAdapt} className="ml-4 px-4 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 transition-colors">
+            Retry
+          </button>
         </div>
       )}
 
