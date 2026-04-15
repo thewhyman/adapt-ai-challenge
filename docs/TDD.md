@@ -90,9 +90,14 @@ Personas can be real individuals (e.g., "Andrew Ng, CEO of Landing AI") — not 
 - 6 personas including real AI Fund team members
 - 4 cached demo documents across AI Fund portfolio verticals
 
-### Phase 3 (Roadmap)
-- **Multi-Doc Ontology:** Cross-document knowledge graphs via shared Concept nodes
-- **Streaming:** SSE for real-time adaptation output
-- **Enterprise RBAC:** Audience profiles mapped to Azure AD / Okta roles
-- **Co-Dialectic Chrome Extension:** Local LLM as prompt gate before any cloud model (inverted Advisor pattern)
-- **Federated Knowledge:** Ontology patterns shared across deployments without exposing source content (connects to the broader Agency OS architecture)
+### Phase 3 (Next)
+- **Streaming adaptation output:** Server-Sent Events to stream Claude's response word-by-word — eliminates the 25s blank wait. User sees content forming in real-time, like ChatGPT. The architecture supports this (Claude SDK has `messages.stream()`) but the JSON response format needs refactoring to stream markdown first, then append rationale.
+- **Upgrade extraction to Claude Sonnet:** Currently using Haiku for speed (~10s). Sonnet produces better structured JSON with fewer parse failures but adds ~10s. Trade-off: reliability vs latency. With streaming, the latency penalty disappears because the user sees progress immediately.
+- **Multi-model hallucination judge (async):** OpenAI GPT-4o-mini validates Claude's adaptation against the source document. Checks for fabricated claims and missed gaps. Currently implemented but disabled for latency — re-enable as a background job that updates the reliability score after the initial response renders.
+- **Response caching:** Neo4j already stores adaptations. Check for existing adaptation before calling Claude — same doc + same persona = instant return on repeat requests. Partially implemented.
+- **Multi-Doc Ontology:** Cross-document knowledge graphs via shared Concept nodes. When two documents reference the same concept, Neo4j automatically creates a knowledge web.
+- **Enterprise RBAC:** Audience profiles mapped to Azure AD / Okta roles for automated content security trimming.
+
+### Phase 4 (Vision)
+- **Co-Dialectic Chrome Extension:** Local LLM as a prompt quality gate before any cloud model — the inverted Advisor pattern. Reduces cloud inference costs by refining prompts locally before submission. See `/anand-career-os/WIP/co-dialectic/01_SPECS/caliber-enforcement-spec.md` for full spec.
+- **Federated Knowledge:** Ontology patterns shared across deployments without exposing source content — connects to the broader Agency OS architecture (provisional patent filed 2026-04-14).
