@@ -283,8 +283,24 @@ export default function AdaptSelector({
             />
           </svg>
         )}
-        {isLoading ? "Adapting..." : "Adapt"}
+        {isLoading ? <AdaptProgress /> : "Adapt"}
       </button>
     </div>
   );
+}
+
+function AdaptProgress() {
+  const [stage, setStage] = useState(0);
+  const stages = ["Reading ontology...", "Channeling persona...", "Generating adaptation...", "Checking for gaps..."];
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setStage(1), 4000),
+      setTimeout(() => setStage(2), 10000),
+      setTimeout(() => setStage(3), 20000),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  return <span>{stages[stage]}</span>;
 }

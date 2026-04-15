@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type DragEvent, type ChangeEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type DragEvent, type ChangeEvent } from "react";
 
 interface FileUploadProps {
   onExtracted: (result: {
@@ -241,23 +241,41 @@ function SelectedFile({ name, onRemove }: { name: string; onRemove: () => void }
 }
 
 function LoadingIndicator() {
+  const [stage, setStage] = useState(0);
+  const stages = [
+    "Parsing document...",
+    "Extracting ontology with Claude...",
+    "Mapping concepts and relationships...",
+    "Building knowledge graph...",
+    "Almost there...",
+  ];
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setStage(1), 3000),
+      setTimeout(() => setStage(2), 8000),
+      setTimeout(() => setStage(3), 15000),
+      setTimeout(() => setStage(4), 25000),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
   return (
-    <div className="flex flex-col items-center gap-3">
-      <svg
-        className="h-8 w-8 animate-spin text-indigo-400"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-        />
-      </svg>
-      <p className="text-sm text-zinc-400">
-        Extracting document structure...
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative w-10 h-10">
+        <svg className="w-10 h-10 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      </div>
+      <p className="text-sm font-medium text-zinc-300 transition-all duration-300">
+        {stages[stage]}
       </p>
+      <div className="flex gap-1.5">
+        {stages.map((_, i) => (
+          <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i <= stage ? "w-6 bg-indigo-500" : "w-2 bg-zinc-700"}`} />
+        ))}
+      </div>
     </div>
   );
 }
