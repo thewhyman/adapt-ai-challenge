@@ -55,9 +55,44 @@ Instead, Adapt AI utilizes a **Two-Pass Pipeline backed by a Neo4j Graph Databas
 
 ---
 
-## 4. Scale & Future Expansion
+## 4. Implemented Post-MVP (During Sprint)
 
-While excluded from the 48-hour MVP, the graph architecture elegantly supports:
-1. **Multi-Doc Ontology:** When multiple documents mention the same `Concept` node, Neo4j immediately creates a knowledge web, enabling cross-document adaptation natively.
-2. **Streaming:** Implementing Server-Sent Events (SSE) or React Server Components for the LLM output to reduce perceived latency.
-3. **Enterprise RBAC:** Audience profiles can map directly to Azure AD / Okta roles for automated content security trimming.
+### 4a. Grounded Generation (Zero Hallucination)
+When a persona expects information the source doesn't contain, the system flags the gap instead of fabricating data. Gaps appear in a red "Gaps to Fill" tab with specific instructions for the author. This is enforced at the prompt level — the LLM is instructed to NEVER invent facts and to use `[GAP: ...]` markers.
+
+### 4b. Multi-Model Hallucination Judge
+After Claude generates an adaptation, OpenAI GPT-4o-mini independently validates it against the source document. The judge checks for:
+- **Fabricated claims** — facts/numbers not in the source
+- **Missed gaps** — information the persona would expect that neither the source contains NOR the adaptation flagged
+- **Reliability score** (0-100%) — displayed to the user
+
+This is the key architectural insight: different model architectures have different blind spots. A judge from a different model family catches what the generator's own self-review would miss.
+
+### 4c. Caliber-Enforced Persona Prompts
+The adaptation prompt doesn't say "adapt for executives." It says "You ARE Steve Jobs + Jony Ive at 0.001% caliber." The persona exercises its full competency stack unprompted — the output must be something the real person would approve without corrections.
+
+### 4d. Custom Persona Support
+Personas can be real individuals (e.g., "Andrew Ng, CEO of Landing AI") — not just archetypes. The system auto-detects which personas are relevant per document context. Demonstrated in the Landing AI demo with Andrew Ng, Eli Chen, and Mike Rubino as personas.
+
+---
+
+## 5. Scale & Future Expansion (Phased Roadmap)
+
+### Phase 1 (Shipped — 48hr MVP)
+- Two-pass ontology extraction + adaptation pipeline
+- Neo4j graph persistence
+- 3 Co-Dialectic persona fusions
+- Grounded generation with gap flagging
+
+### Phase 2 (Shipped — Post-MVP)
+- Multi-model hallucination judge (OpenAI validates Claude)
+- Reliability scoring per adaptation
+- 6 personas including real AI Fund team members
+- 4 cached demo documents across AI Fund portfolio verticals
+
+### Phase 3 (Roadmap)
+- **Multi-Doc Ontology:** Cross-document knowledge graphs via shared Concept nodes
+- **Streaming:** SSE for real-time adaptation output
+- **Enterprise RBAC:** Audience profiles mapped to Azure AD / Okta roles
+- **Co-Dialectic Chrome Extension:** Local LLM as prompt gate before any cloud model (inverted Advisor pattern)
+- **Federated Knowledge:** Ontology patterns shared across deployments without exposing source content (connects to the broader Agency OS architecture)
