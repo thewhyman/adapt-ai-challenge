@@ -4,36 +4,36 @@ import { read, toPlain } from "@/lib/neo4j";
 const CO_DIALECTIC_PERSONAS = [
   {
     id: "aud-steve-jony",
-    name: "The Visionary Builder (Steve Jobs + Jony Ive)",
-    roleName: "Product & Design Lead",
-    orgLevel: "Executive",
+    name: "The Visionary Executive (Steve Jobs + Jony Ive)",
+    roleName: "Product Vision & Design",
+    orgLevel: "CEO / CPO",
     technicalDepth: 3,
     lengthBudget: "brief",
-    focusAreas: ["User Experience", "Product Market Fit", "Simplification"],
+    focusAreas: ["User Experience", "Product Vision", "Simplification", "Why It Matters"],
     terminologyPreference: "accessible",
-    decisionContext: "Focuses entirely on why this matters to the human using it, stripping away all technical bloat or generic corporate speak."
+    decisionContext: "Focuses entirely on why this matters to the human using it. Strips all technical bloat. Thinks in product vision and human impact."
   },
   {
     id: "aud-shreyas-linus",
-    name: "The Critical Engineer (Shreyas Doshi + Linus Torvalds)",
-    roleName: "Engineering & Product Lead",
-    orgLevel: "Director / Principal",
+    name: "The Critical Builder (Linus Torvalds + Shreyas Doshi)",
+    roleName: "Architecture & Engineering",
+    orgLevel: "Principal / Staff Engineer",
     technicalDepth: 5,
     lengthBudget: "detailed",
-    focusAreas: ["Architecture", "Edge Cases", "Scalability", "Trade-offs"],
+    focusAreas: ["Architecture", "Failure Modes", "Scalability", "Trade-offs"],
     terminologyPreference: "technical",
-    decisionContext: "Ruthlessly pragmatic. Demands to know the exact technical architecture, failure modes, and why this doesn't over-engineer the core problem."
+    decisionContext: "Ruthlessly pragmatic. Demands exact technical architecture, failure modes, and what could break. Show the code-level truth."
   },
   {
-    id: "aud-nate-reid",
-    name: "The Scaled Operator (Nate Silver + Reid Hoffman)",
-    roleName: "Growth & Data Executive",
-    orgLevel: "C-Suite",
-    technicalDepth: 4,
+    id: "aud-gary-seth",
+    name: "The Growth Marketer (Gary Vee + Seth Godin)",
+    roleName: "Marketing & Distribution",
+    orgLevel: "CMO / Head of Growth",
+    technicalDepth: 2,
     lengthBudget: "moderate",
-    focusAreas: ["Growth Loops", "Data Validity", "Network Effects", "ROI"],
-    terminologyPreference: "business",
-    decisionContext: "Looks for compounding advantages. Needs to see the data proof and the exact mechanism by which this product or document scales an organization."
+    focusAreas: ["Distribution", "Platform-Native Content", "Audience Empathy", "Content That Spreads"],
+    terminologyPreference: "accessible",
+    decisionContext: "Thinks in hooks, distribution channels, and audience psychology. Adapts content for LinkedIn, Twitter, blogs, and sales decks. Makes every piece of content work harder."
   }
 ];
 
