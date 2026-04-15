@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 8192,
-      system: ADAPTATION_SYSTEM_PROMPT(profile, format),
+      system: ADAPTATION_SYSTEM_PROMPT(profile as AudienceProfile, format),
       messages: [
         {
           role: "user",
