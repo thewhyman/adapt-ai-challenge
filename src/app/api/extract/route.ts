@@ -115,9 +115,18 @@ export async function POST(request: NextRequest) {
     // Generate document ID
     const docId = `doc-${Date.now()}`;
 
-    // Write to Neo4j — sequential queries within a logical unit
+    // Return response immediately — Neo4j writes happen async
+    const response = NextResponse.json({
+      documentId: docId,
+      title: extracted.title,
+      documentType: extracted.documentType,
+      sectionCount: extracted.sections.length,
+      conceptCount: extracted.concepts.length,
+    });
+
+    // Fire-and-forget Neo4j writes — don't block the response
     // 1. Create document
-    await write(
+    write(
       `CREATE (d:Document {
         id: $docId, title: $title, documentType: $docType,
         dcFormat: $format, overallComplexity: $complexity,
@@ -137,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Create sections and link to document
     if (extracted.sections.length > 0) {
-      await write(
+      write(
         `MATCH (d:Document {id: $docId})
          UNWIND $sections AS sec
          CREATE (s:Section {
@@ -161,7 +170,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Create concepts and link to scheme
     if (extracted.concepts.length > 0) {
-      await write(
+      write(
         `MATCH (cs:ConceptScheme {id: 'adapt-ai-concepts'})
          UNWIND $concepts AS con
          MERGE (c:Concept {id: con.id})
@@ -190,7 +199,7 @@ export async function POST(request: NextRequest) {
       }
     }
     if (sectionConceptLinks.length > 0) {
-      await write(
+      write(
         `UNWIND $links AS link
          MATCH (s:Section {id: link.sectionId})
          MATCH (c:Concept {id: link.conceptId})
@@ -210,7 +219,7 @@ export async function POST(request: NextRequest) {
       }
     }
     if (dependencies.length > 0) {
-      await write(
+      write(
         `UNWIND $deps AS dep
          MATCH (s1:Section {id: dep.from})
          MATCH (s2:Section {id: dep.to})
@@ -230,7 +239,7 @@ export async function POST(request: NextRequest) {
       }
     }
     if (conceptRelations.length > 0) {
-      await write(
+      write(
         `UNWIND $rels AS rel
          MATCH (c1:Concept {id: rel.from})
          MATCH (c2:Concept {id: rel.to})
@@ -239,13 +248,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      documentId: docId,
-      title: extracted.title,
-      documentType: extracted.documentType,
-      sectionCount: extracted.sections.length,
-      conceptCount: extracted.concepts.length,
-    });
+    return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     const stack = error instanceof Error ? error.stack?.split("\n").slice(0, 3).join(" | ") : "";
