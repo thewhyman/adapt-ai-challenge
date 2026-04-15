@@ -19,7 +19,7 @@ export async function judgeAdaptation(
   try {
     const response = await getClient().chat.completions.create({
       model: "gpt-4o-mini",
-      max_tokens: 1024,
+      max_tokens: 512,
       messages: [
         {
           role: "system",
@@ -40,7 +40,7 @@ Respond with valid JSON:
         },
         {
           role: "user",
-          content: `SOURCE DOCUMENT:\n${sourceContent.substring(0, 8000)}\n\nADAPTED VERSION (for ${personaName}):\n${adaptedContent}\n\nJudge the adaptation against the source. Return JSON only.`
+          content: `SOURCE:\n${sourceContent.substring(0, 3000)}\n\nADAPTED (${personaName}):\n${adaptedContent.substring(0, 2000)}\n\nReturn JSON only.`
         }
       ]
     });
