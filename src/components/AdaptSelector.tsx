@@ -77,6 +77,7 @@ export default function AdaptSelector({
   const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progressStep, setProgressStep] = useState<string | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -110,6 +111,7 @@ export default function AdaptSelector({
     setError(null);
     setIsLoading(true);
     setProgressStep("Connecting...");
+    setCompletedSteps([]);
 
     try {
       const res = await fetch("/api/adapt", {
@@ -140,7 +142,12 @@ export default function AdaptSelector({
             const data = JSON.parse(dataStr);
 
             if (event === "progress") {
-              setProgressStep(data.elapsed ? `${data.step} (${data.elapsed}s)` : data.step);
+              setProgressStep((prev) => {
+                if (prev && !prev.startsWith(data.step) && !completedSteps.includes(prev.split(' (')[0])) {
+                  setCompletedSteps((cs) => [...cs, prev.split(' (')[0]]);
+                }
+                return data.elapsed ? `${data.step} (${data.elapsed}s)` : data.step;
+              });
             } else if (event === "error") {
               throw new Error(data.error);
             } else if (event === "result") {
@@ -301,12 +308,18 @@ export default function AdaptSelector({
       </button>
 
       {isLoading && progressStep && (
-        <div className="flex items-center gap-3 mt-4">
-          <svg className="h-5 w-5 animate-spin text-indigo-400 shrink-0" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          <span className="text-base text-zinc-300 font-medium">{progressStep}</span>
+        <div className="mt-5 space-y-2.5">
+          {completedSteps.map((s, i) => (
+            <div key={i} className="flex items-center gap-3 text-sm">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400 text-xs">✓</div>
+              <span className="text-zinc-400 font-medium">{s}</span>
+            </div>
+          ))}
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-indigo-500/20 text-indigo-400 text-xs animate-pulse">●</div>
+            <span className="text-zinc-200 font-medium">{progressStep}</span>
+          </div>
+          <p className="text-[11px] text-zinc-600 mt-2 ml-8">running on micro-infra to conserve costs</p>
         </div>
       )}
     </div>
