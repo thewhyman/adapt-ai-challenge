@@ -85,6 +85,18 @@ export default function AdaptSelector({
   const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(-1);
+
+  useEffect(() => {
+    if (!isLoading) { setActiveStep(-1); return; }
+    setActiveStep(0);
+    const timers = [
+      setTimeout(() => setActiveStep(1), 1500),
+      setTimeout(() => setActiveStep(2), 20000),
+      setTimeout(() => setActiveStep(3), 25000),
+      setTimeout(() => setActiveStep(4), 35000),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [isLoading]);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -117,14 +129,6 @@ export default function AdaptSelector({
 
     setError(null);
     setIsLoading(true);
-    setActiveStep(0);
-
-    const timers = [
-      setTimeout(() => setActiveStep(1), 1500),
-      setTimeout(() => setActiveStep(2), 20000),
-      setTimeout(() => setActiveStep(3), 25000),
-      setTimeout(() => setActiveStep(4), 35000),
-    ];
 
     try {
       const res = await fetch("/api/adapt", {
@@ -152,7 +156,6 @@ export default function AdaptSelector({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Adaptation failed");
     } finally {
-      timers.forEach(clearTimeout);
       setIsLoading(false);
     }
   }
