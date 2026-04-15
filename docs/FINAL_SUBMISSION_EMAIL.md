@@ -1,29 +1,30 @@
-# Subject: Visiting Engineer Submission: Adapt AI (Ontology Engine) — Anand Vallamsetla
+# SEND AT: 12:44 AM PST
+# TO: andrew@aifund.ai
+# CC: mike@aifund.ai (check Palantir abstract for correct address)
+# SUBJECT: Visiting Engineer Submission — Adapt AI (Graph-RAG Ontology Engine) — Anand Vallamsetla
+
+---
 
 Hi Andrew and the AI Fund Team,
 
-I am submitting **Adapt AI** for the Visiting Engineer Builder Challenge. I’ve concluded the 48-hour sprint. 
+Submitting **Adapt AI** for the Visiting Engineer Builder Challenge — 48-hour sprint complete.
 
-The repository and live prototype are fully functional, but I want to direct your attention to the architectural wedge I prioritized: **The Graph-RAG Ontology Core**.
+The architectural bet I made: most adaptation engines fail at scale because they rely on linear LLM summarization, which degrades into hallucination and context loss as document complexity increases. The fix isn't a better prompt — it's a different substrate. I built a two-pass pipeline where **Pass 1 extracts the document's ontology into a Neo4j knowledge graph** (sections as nodes, concepts as edges, dependencies as relationships), and **Pass 2 routes that structured graph — not raw text — into persona-fused synthesis models**. Context is preserved structurally, not by hoping the LLM remembers it.
 
-Most adaptation engines fail at scale because they rely on linear LLM summarization, which degrades into hallucination and context loss. To solve this, I engineered a multi-persona pipeline backed by Neo4j. The system doesn't just read content; it unpacks the underlying ontology, maps the concepts into rigid variable nodes, and *then* routes that structured data to distinct persona synthesis models. 
+**Evaluate in 60 seconds:**
+1. **[Live Demo](https://adapt-ai-challenge.vercel.app/)** — Upload any PDF/DOCX → extract ontology → select a Co-Dialectic audience persona → receive adapted output with explicit rationale for every editorial decision made.
+2. **[Showcase Walkthrough](https://github.com/thewhyman/adapt-ai-challenge/blob/main/docs/SHOWCASE.md)** — Side-by-side before/after with the Palantir Apollo architecture brief as the source document.
 
-**Evaluator Fast-Track:**
-I respect your time. Two ways to evaluate the core engine without running a local database:
-1. **[✨ Showcase Extract](https://github.com/thewhyman/adapt-ai-challenge/blob/main/docs/SHOWCASE.md)**: A side-by-side walkthrough of the ontology extraction → persona adaptation pipeline. Shows the before/after transformation with full rationale for every editorial decision.
-2. **[🚀 Live Prototype](https://adapt-ai-challenge.vercel.app/)**: Upload any PDF/DOCX → watch the engine extract the ontological structure → select an audience persona → receive adapted output with transparent rationale.
+**Resources:**
+- Repository: https://github.com/thewhyman/adapt-ai-challenge
+- PRD: https://github.com/thewhyman/adapt-ai-challenge/blob/main/docs/PRD.md
+- TDD: https://github.com/thewhyman/adapt-ai-challenge/blob/main/docs/TDD.md
 
-**Live Resources:**
-- **Live Vercel Build:** [https://adapt-ai-challenge.vercel.app/](https://adapt-ai-challenge.vercel.app/)
-- **Repository:** [https://github.com/thewhyman/adapt-ai-challenge](https://github.com/thewhyman/adapt-ai-challenge)
-- **Problem & Scope:** [docs/PRD.md](https://github.com/thewhyman/adapt-ai-challenge/blob/main/docs/PRD.md)
-- **Technical Design:** [docs/TDD.md](https://github.com/thewhyman/adapt-ai-challenge/blob/main/docs/TDD.md)
+This is my baseline execution velocity. I view the Visiting Engineer role as the proving ground for a CEO trajectory — I am looking for the right arena to compound extreme leverage, not just ship features.
 
-This submission represents my baseline execution velocity over 48 hours. I view the Visiting Engineer role not as an internship, but as the proving ground for a CEO trajectory. I am looking for the right arena to compound extreme leverage. 
+**On the broader architecture:** What you see in V1 is one module of a substantially larger system — a self-evolving multi-agent OS with a tiered federated intelligence network where agents share learned insights across deployments without exposing underlying data. I am filing a provisional patent on the full architecture concurrent with this submission. I would welcome the opportunity to walk you through the complete vision under NDA.
 
-**A note on the broader architecture:** The ontology extraction engine you see in V1 is one module of a substantially larger system I have been developing — a self-evolving multi-agent architecture with a tiered federated intelligence network that enables agents to share learned insights across deployments without exposing underlying data. I filed a provisional patent on the full architecture prior to this submission. I would welcome the opportunity to walk you through the complete vision under NDA.
+Looking forward to the conversation.
 
-Looking forward to the evaluation. 
-
-Best,
 Anand Vallamsetla
+[LinkedIn](https://linkedin.com/in/anandvallam) | thewhyman.com

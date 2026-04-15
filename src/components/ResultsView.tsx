@@ -31,15 +31,15 @@ interface ResultsViewProps {
 }
 
 // ---------------------------------------------------------------------------
-// Collapsible rationale section
+// Collapsible rationale section (Dark mode)
 // ---------------------------------------------------------------------------
 
 const SECTION_STYLES = {
-  kept: { bg: "bg-green-50", badge: "bg-green-100 text-green-800", border: "border-green-200" },
-  simplified: { bg: "bg-blue-50", badge: "bg-blue-100 text-blue-800", border: "border-blue-200" },
-  expanded: { bg: "bg-purple-50", badge: "bg-purple-100 text-purple-800", border: "border-purple-200" },
-  cut: { bg: "bg-red-50", badge: "bg-red-100 text-red-800", border: "border-red-200" },
-  terminology: { bg: "bg-orange-50", badge: "bg-orange-100 text-orange-800", border: "border-orange-200" },
+  kept: { bg: "bg-emerald-500/10", badge: "bg-emerald-500/20 text-emerald-400", border: "border-emerald-500/20" },
+  simplified: { bg: "bg-blue-500/10", badge: "bg-blue-500/20 text-blue-400", border: "border-blue-500/20" },
+  expanded: { bg: "bg-violet-500/10", badge: "bg-violet-500/20 text-violet-400", border: "border-violet-500/20" },
+  cut: { bg: "bg-red-500/10", badge: "bg-red-500/20 text-red-400", border: "border-red-500/20" },
+  terminology: { bg: "bg-amber-500/10", badge: "bg-amber-500/20 text-amber-400", border: "border-amber-500/20" },
 } as const;
 
 function RationaleSection({
@@ -59,19 +59,19 @@ function RationaleSection({
   if (items.length === 0) return null;
 
   return (
-    <div className={`rounded-lg border ${styles.border} overflow-hidden`}>
+    <div className={`rounded-xl border ${styles.border} overflow-hidden`}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-4 py-3 ${styles.bg} hover:opacity-90 transition-opacity`}
+        className={`w-full flex items-center justify-between px-4 py-3 ${styles.bg} hover:opacity-80 transition-opacity`}
       >
-        <span className="font-medium text-gray-800">{title}</span>
+        <span className="font-medium text-zinc-200">{title}</span>
         <span className="flex items-center gap-2">
           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${styles.badge}`}>
             {items.length}
           </span>
           <svg
-            className={`w-4 h-4 text-gray-500 transition-transform ${open ? "rotate-180" : ""}`}
+            className={`w-4 h-4 text-zinc-400 transition-transform ${open ? "rotate-180" : ""}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -81,10 +81,10 @@ function RationaleSection({
         </span>
       </button>
       {open && (
-        <ul className="px-4 py-3 space-y-2 bg-white">
+        <ul className="px-4 py-3 space-y-2 bg-zinc-900/50">
           {items.map((item, i) => (
-            <li key={i} className="text-sm text-gray-700 flex gap-2">
-              <span className="text-gray-400 select-none">&bull;</span>
+            <li key={i} className="text-sm text-zinc-300 flex gap-2">
+              <span className="text-zinc-600 select-none">&bull;</span>
               <span>{item}</span>
             </li>
           ))}
@@ -107,19 +107,19 @@ function TerminologySection({
   if (changes.length === 0) return null;
 
   return (
-    <div className={`rounded-lg border ${styles.border} overflow-hidden`}>
+    <div className={`rounded-xl border ${styles.border} overflow-hidden`}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-4 py-3 ${styles.bg} hover:opacity-90 transition-opacity`}
+        className={`w-full flex items-center justify-between px-4 py-3 ${styles.bg} hover:opacity-80 transition-opacity`}
       >
-        <span className="font-medium text-gray-800">Terminology Changes</span>
+        <span className="font-medium text-zinc-200">Terminology Changes</span>
         <span className="flex items-center gap-2">
           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${styles.badge}`}>
             {changes.length}
           </span>
           <svg
-            className={`w-4 h-4 text-gray-500 transition-transform ${open ? "rotate-180" : ""}`}
+            className={`w-4 h-4 text-zinc-400 transition-transform ${open ? "rotate-180" : ""}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -129,15 +129,15 @@ function TerminologySection({
         </span>
       </button>
       {open && (
-        <div className="px-4 py-3 space-y-3 bg-white">
+        <div className="px-4 py-3 space-y-3 bg-zinc-900/50">
           {changes.map((change, i) => (
             <div key={i} className="text-sm">
-              <div className="flex items-center gap-2 font-medium text-gray-800">
-                <span className="line-through text-gray-500">{change.original}</span>
-                <span className="text-gray-400">&rarr;</span>
+              <div className="flex items-center gap-2 font-medium text-zinc-200">
+                <span className="line-through text-zinc-500">{change.original}</span>
+                <span className="text-zinc-600">&rarr;</span>
                 <span>{change.adapted}</span>
               </div>
-              <p className="text-gray-500 text-xs mt-0.5 ml-0.5">{change.reason}</p>
+              <p className="text-zinc-500 text-xs mt-0.5 ml-0.5">{change.reason}</p>
             </div>
           ))}
         </div>
@@ -159,87 +159,86 @@ export default function ResultsView({
   onNewAdaptation,
 }: ResultsViewProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="animate-fade-in">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              {audienceName}
-              <span className="mx-2 text-gray-300 font-normal">&middot;</span>
-              <span className="font-medium text-gray-600">{formatName}</span>
-            </h1>
-            <p className="text-sm text-gray-500 mt-0.5">Adaptation complete</p>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onNewAdaptation}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Different Audience
-            </button>
-            <button
-              type="button"
-              onClick={onReset}
-              className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              New Document
-            </button>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+        <div>
+          <h1 className="text-xl font-bold text-zinc-100">
+            {audienceName}
+            <span className="mx-2 text-zinc-700 font-normal">&middot;</span>
+            <span className="font-medium text-zinc-400">{formatName}</span>
+          </h1>
+          <p className="text-sm text-emerald-400 mt-0.5 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
+            Adaptation complete
+          </p>
         </div>
-      </header>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onNewAdaptation}
+            className="px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors"
+          >
+            Different Audience
+          </button>
+          <button
+            type="button"
+            onClick={onReset}
+            className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
+          >
+            New Document
+          </button>
+        </div>
+      </div>
 
       {/* Two-panel layout */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT: Adapted content (2/3 width on desktop) */}
-          <section className="lg:col-span-2">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-6">
-                Adapted Content
-              </h2>
-              <article className="prose prose-gray max-w-none">
-                <ReactMarkdown>{adaptedContent}</ReactMarkdown>
-              </article>
-            </div>
-          </section>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT: Adapted content (2/3 width on desktop) */}
+        <section className="lg:col-span-2">
+          <div className="glass-panel rounded-2xl p-6 sm:p-8">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-6">
+              Adapted Content
+            </h2>
+            <article className="prose prose-invert prose-zinc max-w-none prose-headings:text-zinc-100 prose-p:text-zinc-300 prose-strong:text-zinc-200 prose-li:text-zinc-300 prose-a:text-indigo-400">
+              <ReactMarkdown>{adaptedContent}</ReactMarkdown>
+            </article>
+          </div>
+        </section>
 
-          {/* RIGHT: Rationale panel (1/3 width on desktop) */}
-          <aside className="lg:col-span-1">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">
-                Adaptation Rationale
-              </h2>
-              <div className="space-y-3">
-                <RationaleSection
-                  title="Kept"
-                  items={rationale.kept}
-                  styleKey="kept"
-                  defaultOpen
-                />
-                <RationaleSection
-                  title="Simplified"
-                  items={rationale.simplified}
-                  styleKey="simplified"
-                />
-                <RationaleSection
-                  title="Expanded"
-                  items={rationale.expanded}
-                  styleKey="expanded"
-                />
-                <RationaleSection
-                  title="Cut"
-                  items={rationale.cut}
-                  styleKey="cut"
-                />
-                <TerminologySection changes={rationale.terminologyChanges} />
-              </div>
+        {/* RIGHT: Rationale panel (1/3 width on desktop) */}
+        <aside className="lg:col-span-1">
+          <div className="glass-panel rounded-2xl p-6 sticky top-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">
+              Adaptation Rationale
+            </h2>
+            <div className="space-y-3">
+              <RationaleSection
+                title="Kept"
+                items={rationale.kept}
+                styleKey="kept"
+                defaultOpen
+              />
+              <RationaleSection
+                title="Simplified"
+                items={rationale.simplified}
+                styleKey="simplified"
+              />
+              <RationaleSection
+                title="Expanded"
+                items={rationale.expanded}
+                styleKey="expanded"
+              />
+              <RationaleSection
+                title="Cut"
+                items={rationale.cut}
+                styleKey="cut"
+              />
+              <TerminologySection changes={rationale.terminologyChanges} />
             </div>
-          </aside>
-        </div>
-      </main>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
