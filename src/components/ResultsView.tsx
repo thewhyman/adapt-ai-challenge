@@ -151,10 +151,10 @@ export default function ResultsView({
   const gapCount = rationale.gaps?.length ?? 0;
 
   const tabs: { id: Tab; label: string; count: number; color?: string }[] = [
-    { id: "content", label: "Adapted Content", count: 0 },
-    { id: "rationale", label: "Rationale", count: rationaleCount },
-    { id: "terminology", label: "Terminology", count: termCount },
-    ...(gapCount > 0 ? [{ id: "gaps" as Tab, label: "Gaps to Fill", count: gapCount, color: "amber" }] : []),
+    { id: "content", label: "Adapted Content", count: 0, color: "emerald" },
+    { id: "rationale", label: "Rationale", count: rationaleCount, color: "blue" },
+    { id: "terminology", label: "Terminology", count: termCount, color: "amber" },
+    ...(gapCount > 0 ? [{ id: "gaps" as Tab, label: "Gaps to Fill", count: gapCount, color: "red" }] : []),
   ];
 
   return (
@@ -198,7 +198,13 @@ export default function ResultsView({
             {tab.label}
             {tab.count > 0 && (
               <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                tab.color === "amber"
+                tab.color === "red"
+                  ? (activeTab === tab.id ? "bg-red-500/30 text-red-300" : "bg-red-500/20 text-red-400 animate-pulse")
+                  : tab.color === "emerald"
+                  ? (activeTab === tab.id ? "bg-emerald-500/30 text-emerald-300" : "bg-emerald-500/10 text-emerald-500")
+                  : tab.color === "blue"
+                  ? (activeTab === tab.id ? "bg-blue-500/30 text-blue-300" : "bg-blue-500/10 text-blue-500")
+                  : tab.color === "amber"
                   ? (activeTab === tab.id ? "bg-amber-500/30 text-amber-300" : "bg-amber-500/10 text-amber-500")
                   : (activeTab === tab.id ? "bg-indigo-500/30 text-indigo-300" : "bg-zinc-800 text-zinc-500")
               }`}>
@@ -236,14 +242,14 @@ export default function ResultsView({
       )}
 
       {activeTab === "gaps" && rationale.gaps && (
-        <div className="glass-panel rounded-2xl p-8 animate-fade-in">
+        <div className="glass-panel rounded-2xl p-8 animate-fade-in border border-red-500/20">
           <div className="flex items-center gap-3 mb-6">
-            <span className="w-3 h-3 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50"></span>
-            <p className="text-sm text-amber-300 font-medium">This persona expects information the source document doesn't contain. Fill these gaps with real data — never hallucinate.</p>
+            <span className="w-3 h-3 rounded-full bg-red-500 shadow-sm shadow-red-500/50 animate-pulse"></span>
+            <p className="text-sm text-red-300 font-medium">This persona expects information the source document doesn't contain. Fill these gaps with real data — the system refuses to hallucinate.</p>
           </div>
           <div className="space-y-3">
             {rationale.gaps.map((gap, i) => (
-              <div key={i} className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <div key={i} className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
                 <p className="text-sm text-zinc-200 leading-relaxed">{gap}</p>
               </div>
             ))}
