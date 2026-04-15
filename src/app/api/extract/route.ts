@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     });
 
     const textBlock = message.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
+    if (!textBlock) {
       return NextResponse.json({ error: "No text response from Claude" }, { status: 500 });
     }
 
