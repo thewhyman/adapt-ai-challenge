@@ -145,14 +145,25 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Read audience profile (Co-Dialectic Persona Fusion Engine)
-    // Fetch persona profiles from our own profiles API (single source of truth)
-    const profilesRes = await fetch(new URL(`/api/profiles?documentId=${encodeURIComponent(documentId)}`, request.url));
-    const profilesData = await profilesRes.json();
-    const allAudiences = profilesData.audiences || [];
+    // Read audience profile from Neo4j, fallback to hardcoded personas
+    const FALLBACK_PERSONAS: Record<string, any> = {
+      "aud-steve-jony": { id: "aud-steve-jony", name: "Visionary Executive (Steve Jobs + Jony Ive)", technicalDepth: 3, lengthBudget: "brief", focusAreas: ["User Experience", "Product Vision", "Simplification"], terminologyPreference: "accessible", decisionContext: "Why this matters to the human using it." },
+      "aud-shreyas-linus": { id: "aud-shreyas-linus", name: "Critical Builder (Linus Torvalds + Shreyas Doshi)", technicalDepth: 5, lengthBudget: "detailed", focusAreas: ["Architecture", "Failure Modes", "Scalability", "Trade-offs"], terminologyPreference: "technical", decisionContext: "Exact architecture, failure modes, what could break." },
+      "aud-gary-seth": { id: "aud-gary-seth", name: "Growth Marketer (Gary Vee + Seth Godin)", technicalDepth: 2, lengthBudget: "moderate", focusAreas: ["Distribution", "Platform-Native Content", "Audience Empathy"], terminologyPreference: "accessible", decisionContext: "Hooks, distribution channels, audience psychology." },
+      "aud-andrew-ng": { id: "aud-andrew-ng", name: "Andrew Ng (CEO, Landing AI)", technicalDepth: 5, lengthBudget: "brief", focusAreas: ["AI/ML Technical Depth", "Data-Centric AI", "Product-Market Fit"], terminologyPreference: "technical", decisionContext: "Data-centric AI, principled ML, real problem for real users." },
+      "aud-eli-chen": { id: "aud-eli-chen", name: "Eli Chen (CTO, AI Fund)", technicalDepth: 5, lengthBudget: "detailed", focusAreas: ["System Architecture", "Scalability", "Technical Debt"], terminologyPreference: "technical", decisionContext: "Can this be built, scaled, maintained by a small team." },
+      "aud-mike-rubino": { id: "aud-mike-rubino", name: "Mike Rubino (Head of Talent, AI Fund)", technicalDepth: 3, lengthBudget: "brief", focusAreas: ["Builder Signal", "Execution Velocity", "Leadership Potential"], terminologyPreference: "accessible", decisionContext: "Did they build it or just describe it." },
+      "aud-trade-cfo": { id: "aud-trade-cfo", name: "CFO (Import-Heavy Enterprise)", technicalDepth: 2, lengthBudget: "brief", focusAreas: ["Cost Impact", "Budget Exposure", "Risk Mitigation"], terminologyPreference: "business", decisionContext: "How much does this cost us, what's the exposure." },
+      "aud-trade-counsel": { id: "aud-trade-counsel", name: "Trade Compliance Counsel", technicalDepth: 5, lengthBudget: "detailed", focusAreas: ["HTS Classification", "Penalty Risk", "Regulatory Timeline"], terminologyPreference: "technical", decisionContext: "Full regulatory detail for compliance filings." },
+      "aud-trade-ops": { id: "aud-trade-ops", name: "Supply Chain VP", technicalDepth: 3, lengthBudget: "moderate", focusAreas: ["Supplier Diversification", "Lead Time Impact", "Alternative Sourcing"], terminologyPreference: "business", decisionContext: "Which suppliers affected, where to source alternatives." },
+      "aud-health-cmo": { id: "aud-health-cmo", name: "Hospital CMO", technicalDepth: 4, lengthBudget: "moderate", focusAreas: ["Patient Outcomes", "Safety Profile", "Formulary Decision"], terminologyPreference: "technical", decisionContext: "Should this enter the formulary." },
+      "aud-health-researcher": { id: "aud-health-researcher", name: "Principal Investigator (PhD)", technicalDepth: 5, lengthBudget: "detailed", focusAreas: ["Study Design", "Statistical Powering", "Confounders"], terminologyPreference: "technical", decisionContext: "Is the study design sound." },
+      "aud-health-advocate": { id: "aud-health-advocate", name: "Patient Advocacy Director", technicalDepth: 1, lengthBudget: "brief", focusAreas: ["Patient Experience", "Access", "Hope vs Hype"], terminologyPreference: "accessible", decisionContext: "Does it work, is it safe, when can patients access it." },
+    };
 
-    const profile = allAudiences.find((p: any) => p.id === audienceId);
+    const profile = FALLBACK_PERSONAS[audienceId];
     if (!profile) {
-      return NextResponse.json({ error: `Audience profile '${audienceId}' not found for document '${documentId}'` }, { status: 404 });
+      return NextResponse.json({ error: `Audience profile '${audienceId}' not found` }, { status: 404 });
     }
 
     // 4. Read output format
