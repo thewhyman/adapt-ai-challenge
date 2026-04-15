@@ -242,40 +242,42 @@ function SelectedFile({ name, onRemove }: { name: string; onRemove: () => void }
 
 function LoadingIndicator() {
   const [stage, setStage] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
   const stages = [
-    "Parsing document...",
-    "Extracting ontology with Claude...",
-    "Mapping concepts and relationships...",
-    "Building knowledge graph...",
-    "Almost there...",
+    { label: "Parsing PDF", detail: "~2s", duration: 2000 },
+    { label: "Extracting ontology via Claude Haiku", detail: "~10-15s", duration: 12000 },
+    { label: "Storing knowledge graph in Neo4j", detail: "~3s", duration: 3000 },
+    { label: "Done", detail: "", duration: 0 },
   ];
 
   useEffect(() => {
-    const timers = [
-      setTimeout(() => setStage(1), 3000),
-      setTimeout(() => setStage(2), 8000),
-      setTimeout(() => setStage(3), 15000),
-      setTimeout(() => setStage(4), 25000),
-    ];
-    return () => timers.forEach(clearTimeout);
+    const timer = setInterval(() => setElapsed(e => e + 1), 1000);
+    const t1 = setTimeout(() => setStage(1), 2000);
+    const t2 = setTimeout(() => setStage(2), 15000);
+    const t3 = setTimeout(() => setStage(3), 18000);
+    return () => { clearInterval(timer); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="relative w-10 h-10">
-        <svg className="w-10 h-10 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-      </div>
-      <p className="text-sm font-medium text-zinc-300 transition-all duration-300">
-        {stages[stage]}
-      </p>
-      <div className="flex gap-1.5">
-        {stages.map((_, i) => (
-          <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i <= stage ? "w-6 bg-indigo-500" : "w-2 bg-zinc-700"}`} />
+    <div className="flex flex-col items-center gap-4 w-full max-w-xs">
+      <svg className="w-8 h-8 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+      <div className="w-full space-y-2">
+        {stages.slice(0, -1).map((s, i) => (
+          <div key={i} className="flex items-center gap-3 text-xs">
+            <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+              i < stage ? "bg-emerald-500/20 text-emerald-400" : i === stage ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-zinc-800 text-zinc-600"
+            }`}>
+              {i < stage ? "✓" : i === stage ? "●" : "○"}
+            </div>
+            <span className={`${i <= stage ? "text-zinc-300" : "text-zinc-600"}`}>{s.label}</span>
+            <span className="text-zinc-600 ml-auto">{s.detail}</span>
+          </div>
         ))}
       </div>
+      <p className="text-[10px] text-zinc-600 mt-1">{elapsed}s · Running on Vercel free-tier infra</p>
     </div>
   );
 }

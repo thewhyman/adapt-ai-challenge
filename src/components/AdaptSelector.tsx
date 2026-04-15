@@ -291,16 +291,16 @@ export default function AdaptSelector({
 
 function AdaptProgress() {
   const [stage, setStage] = useState(0);
-  const stages = ["Reading ontology...", "Channeling persona...", "Generating adaptation...", "Checking for gaps..."];
+  const [elapsed, setElapsed] = useState(0);
+  const stages = ["Reading graph...", "Channeling persona via Claude Sonnet...", "Generating adaptation + gaps...", "Finalizing..."];
 
   useEffect(() => {
-    const timers = [
-      setTimeout(() => setStage(1), 4000),
-      setTimeout(() => setStage(2), 10000),
-      setTimeout(() => setStage(3), 20000),
-    ];
-    return () => timers.forEach(clearTimeout);
+    const timer = setInterval(() => setElapsed(e => e + 1), 1000);
+    const t1 = setTimeout(() => setStage(1), 2000);
+    const t2 = setTimeout(() => setStage(2), 12000);
+    const t3 = setTimeout(() => setStage(3), 25000);
+    return () => { clearInterval(timer); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
-  return <span>{stages[stage]}</span>;
+  return <span>{stages[stage]} ({elapsed}s)</span>;
 }
