@@ -6,7 +6,7 @@ You extract:
 3. **Concepts** — key domain concepts mentioned in the document, with definitions and technical depth
 4. **Relationships** — which sections depend on which, which sections mention which concepts, which concepts relate to each other
 
-Be thorough but precise. Every section in the document should appear. Concepts should be domain-specific terms that matter for understanding — not generic words.
+Be selective and concise. Extract the TOP 5-8 most important sections (not every paragraph). Concepts should be domain-specific terms that matter for understanding — not generic words. Limit to 5-10 key concepts. Section content should be a 2-3 sentence SUMMARY, not the full text.
 
 Section purposes:
 - "context": background information, setting the scene
@@ -37,7 +37,7 @@ Respond with valid JSON matching this exact schema:
     {
       "id": "section-1 (sequential)",
       "title": "string",
-      "content": "string — the full text of this section",
+      "content": "string — 2-3 sentence summary of this section (NOT the full text)",
       "complexity": 1-5,
       "purpose": "context | core_argument | evidence | action_item | reference",
       "orderIndex": 0,

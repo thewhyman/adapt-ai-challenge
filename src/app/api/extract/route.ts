@@ -62,14 +62,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Truncate to ~100K chars (~50K tokens) to stay within context and keep speed
-    const truncatedContent = content.length > 100_000
-      ? content.slice(0, 100_000) + "\n\n[... truncated for processing]"
+    const truncatedContent = content.length > 30_000
+      ? content.slice(0, 30_000) + "\n\n[... truncated for processing]"
       : content;
 
     // Pass 1: Claude extracts structure (Haiku for speed — extraction is structured, not creative)
     const message = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 8192,
+      max_tokens: 4096,
       system: EXTRACTION_SYSTEM_PROMPT,
       messages: [
         { role: "user", content: EXTRACTION_USER_PROMPT(truncatedContent, file.name) },
