@@ -4,6 +4,7 @@ import { read, write, toPlain } from "@/lib/neo4j";
 import { ADAPTATION_SYSTEM_PROMPT, ADAPTATION_USER_PROMPT } from "@/lib/adaptation-prompt";
 import { AudienceProfile, OutputFormat } from "@/lib/types";
 import { getCachedAdaptation, isDemoDoc } from "@/lib/demo-cache";
+import { judgeAdaptation } from "@/lib/hallucination-judge";
 
 const anthropic = new Anthropic();
 
@@ -216,6 +217,17 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    // Multi-model hallucination judge (OpenAI GPT validates Claude's output)
+    const sourceText = sections.map((s: any) => `${s.title}: ${s.content}`).join("\n");
+    let reliability = 0;
+    let judgeResult = null;
+    try {
+      judgeResult = await judgeAdaptation(sourceText, adapted.adaptedContent, profile.name);
+      reliability = judgeResult.reliability;
+    } catch {
+      reliability = 0;
+    }
+
     return NextResponse.json({
       adaptationId,
       documentId,
@@ -224,7 +236,15 @@ export async function POST(request: NextRequest) {
       formatId,
       formatName: format.name,
       adaptedContent: adapted.adaptedContent,
-      rationale: adapted.rationale,
+      rationale: {
+        ...adapted.rationale,
+        gaps: [
+          ...(adapted.rationale.gaps || []),
+          ...(judgeResult?.missedGaps?.map((g: string) => `[Judge-identified] ${g}`) || [])
+        ]
+      },
+      reliability,
+      hallucinations: judgeResult?.hallucinations || [],
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
