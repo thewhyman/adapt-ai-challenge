@@ -58,6 +58,72 @@ const CO_DIALECTIC_PERSONAS = [
     decisionContext: "Former CTO of Credo AI (AI governance). Evaluates whether the architecture can actually be built, scaled, and maintained by a small team. Looks for engineering maturity signals: error handling, edge cases, monitoring, and honest trade-off documentation."
   },
   {
+    id: "aud-trade-cfo",
+    name: "CFO (Import-Heavy Enterprise)",
+    roleName: "Financial Impact Assessment",
+    orgLevel: "C-Suite",
+    technicalDepth: 2,
+    lengthBudget: "brief",
+    focusAreas: ["Cost Impact", "Budget Exposure", "Risk Mitigation", "Timeline"],
+    terminologyPreference: "business",
+    decisionContext: "Needs to know: how much does this cost us, what's the exposure, and what do we do about it. No regulatory jargon — translate to dollars and deadlines."
+  },
+  {
+    id: "aud-trade-counsel",
+    name: "Trade Compliance Counsel",
+    roleName: "Legal & Regulatory Analysis",
+    orgLevel: "VP / General Counsel",
+    technicalDepth: 5,
+    lengthBudget: "detailed",
+    focusAreas: ["HTS Classification", "Exemption Eligibility", "Penalty Risk", "Regulatory Timeline"],
+    terminologyPreference: "technical",
+    decisionContext: "Needs full regulatory detail: specific HTS codes, exclusion request procedures, penalty calculations, and filing deadlines. This is the person who signs the compliance filings."
+  },
+  {
+    id: "aud-trade-ops",
+    name: "Supply Chain VP",
+    roleName: "Operations & Sourcing",
+    orgLevel: "VP Operations",
+    technicalDepth: 3,
+    lengthBudget: "moderate",
+    focusAreas: ["Supplier Diversification", "Lead Time Impact", "Inventory Strategy", "Alternative Sourcing"],
+    terminologyPreference: "business",
+    decisionContext: "Needs to know: which suppliers are affected, what's the lead time impact, and where do we source alternatives. Thinks in logistics, not law."
+  },
+  {
+    id: "aud-health-cmo",
+    name: "Hospital CMO (Chief Medical Officer)",
+    roleName: "Clinical Decision-Maker",
+    orgLevel: "C-Suite",
+    technicalDepth: 4,
+    lengthBudget: "moderate",
+    focusAreas: ["Patient Outcomes", "Safety Profile", "Clinical Workflow", "Formulary Decision"],
+    terminologyPreference: "technical",
+    decisionContext: "Evaluates whether this treatment should enter the hospital formulary. Needs efficacy data, safety signals, and how it fits into existing treatment protocols. Thinks in patient outcomes, not molecular biology."
+  },
+  {
+    id: "aud-health-researcher",
+    name: "Principal Investigator (PhD)",
+    roleName: "Research & Methodology",
+    orgLevel: "Lead Researcher",
+    technicalDepth: 5,
+    lengthBudget: "detailed",
+    focusAreas: ["Study Design", "Statistical Powering", "Mechanism of Action", "Confounders", "Reproducibility"],
+    terminologyPreference: "technical",
+    decisionContext: "Evaluates the science: is the study design sound, are the endpoints appropriate, is the statistical powering adequate, and what could confound the results? Reads papers for breakfast."
+  },
+  {
+    id: "aud-health-advocate",
+    name: "Patient Advocacy Director",
+    roleName: "Patient Voice & Access",
+    orgLevel: "Director",
+    technicalDepth: 1,
+    lengthBudget: "brief",
+    focusAreas: ["Patient Experience", "Access & Affordability", "Hope vs Hype", "Enrollment"],
+    terminologyPreference: "accessible",
+    decisionContext: "Represents the 47 million patients with treatment-resistant depression. Needs to know: does this work, is it safe, when can patients access it, and what does enrollment look like? Zero jargon — this person talks to families."
+  },
+  {
     id: "aud-mike-rubino",
     name: "Mike Rubino (Head of Talent, AI Fund · Ex-Neuralink)",
     roleName: "Founder Assessment",
@@ -73,8 +139,8 @@ const CO_DIALECTIC_PERSONAS = [
 const DEMO_PERSONA_MAP: Record<string, string[]> = {
   "doc-demo-landing": ["aud-andrew-ng", "aud-eli-chen", "aud-mike-rubino"],
   "doc-eval-demo": ["aud-steve-jony", "aud-shreyas-linus", "aud-gary-seth"],
-  "doc-demo-gaia": ["aud-steve-jony", "aud-shreyas-linus", "aud-gary-seth"],
-  "doc-demo-health": ["aud-steve-jony", "aud-shreyas-linus", "aud-gary-seth"],
+  "doc-demo-gaia": ["aud-trade-cfo", "aud-trade-counsel", "aud-trade-ops"],
+  "doc-demo-health": ["aud-health-cmo", "aud-health-researcher", "aud-health-advocate"],
 };
 
 export async function GET(request: NextRequest) {

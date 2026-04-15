@@ -102,7 +102,15 @@ export default function FileUpload({ onExtracted, isLoading, setIsLoading }: Fil
         body: formData,
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Non-JSON response:", text.substring(0, 200));
+        setError("Server returned an unexpected response. Try incognito mode if browser extensions interfere, or try a smaller file.");
+        return;
+      }
 
       if (!response.ok) {
         setError(data.error ?? `Extraction failed (${response.status})`);

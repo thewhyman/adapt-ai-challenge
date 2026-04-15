@@ -120,12 +120,17 @@ export default function AdaptSelector({
         }),
       });
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({ error: "Adaptation failed" }));
-        throw new Error(body.error ?? `Adaptation failed (${res.status})`);
+      const text = await res.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch {
+        throw new Error("Server returned an unexpected response. Please try again.");
       }
 
-      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error ?? `Adaptation failed (${res.status})`);
+      }
       onAdapted({
         adaptationId: result.adaptationId,
         audienceName: result.audienceName,
