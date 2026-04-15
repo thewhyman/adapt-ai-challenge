@@ -313,24 +313,29 @@ export default function AdaptSelector({
       </button>
 
       {isLoading && (
-        <div className="mt-5 space-y-3">
-          {ALL_ADAPT_STEPS.map((label, i) => {
-            const match = progressSteps.find(p => p.step.startsWith(label));
-            const isCompleted = match && progressSteps.some((p, j) => j > progressSteps.indexOf(match!) && p.step !== match!.step);
-            const isActive = match && !isCompleted;
-            return (
-              <div key={i} className="flex items-center gap-3 text-sm">
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-xs ${
-                  isCompleted ? "bg-emerald-500/20 text-emerald-400" : isActive ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-zinc-800 text-zinc-600"
-                }`}>
-                  {isCompleted ? "✓" : isActive ? "●" : "○"}
+        <div className="flex flex-col items-center gap-4 w-full max-w-xs mx-auto mt-6">
+          <svg className="w-8 h-8 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <div className="w-full space-y-3">
+            {ALL_ADAPT_STEPS.map((label, i) => {
+              const match = progressSteps.find(p => p.step.startsWith(label));
+              const isCompleted = match && progressSteps.some((p, j) => j > progressSteps.indexOf(match!) && p.step !== match!.step);
+              const isActive = match && !isCompleted;
+              return (
+                <div key={i} className="flex items-center gap-3 text-sm">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors text-xs ${
+                    isCompleted ? "bg-emerald-500/20 text-emerald-400" : isActive ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-zinc-800 text-zinc-600"
+                  }`}>
+                    {isCompleted ? "✓" : isActive ? "●" : "○"}
+                  </div>
+                  <span className={`font-medium ${isCompleted ? "text-zinc-200" : isActive ? "text-zinc-200" : "text-zinc-600"}`}>{label}</span>
                 </div>
-                <span className={`font-medium ${isCompleted ? "text-zinc-400" : isActive ? "text-zinc-200" : "text-zinc-600"}`}>{label}</span>
-                {match?.elapsed && <span className="text-zinc-600 text-xs">{match.elapsed}s</span>}
-              </div>
-            );
-          })}
-          <p className="text-[11px] text-zinc-600 mt-2 ml-8">running on micro-infra to conserve costs</p>
+              );
+            })}
+          </div>
+          <p className="text-[11px] text-zinc-600 mt-1">running on micro-infra to conserve costs</p>
         </div>
       )}
     </div>
