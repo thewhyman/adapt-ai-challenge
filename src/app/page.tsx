@@ -21,6 +21,8 @@ interface AdaptResult {
   formatName: string;
   adaptedContent: string;
   reliability?: number;
+  wordCount?: number;
+  generationTime?: string;
   rationale: {
     kept: string[];
     simplified: string[];
@@ -192,6 +194,8 @@ export default function Home() {
                 adaptedContent={adaptResult.adaptedContent}
                 rationale={adaptResult.rationale}
                 reliability={adaptResult.reliability}
+                wordCount={adaptResult.wordCount}
+                generationTime={adaptResult.generationTime}
                 onReset={handleReset}
                 onNewAdaptation={handleNewAdaptation}
               />

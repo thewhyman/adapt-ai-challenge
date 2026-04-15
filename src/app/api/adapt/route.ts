@@ -177,9 +177,10 @@ export async function POST(request: NextRequest) {
     const format = toPlain((formatRows[0] as Record<string, unknown>).f) as OutputFormat;
 
     // 5. Pass 2: Claude adaptation
+    const startTime = Date.now();
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 2048,
       system: ADAPTATION_SYSTEM_PROMPT(profile as AudienceProfile, format),
       messages: [
         {
@@ -259,7 +260,9 @@ export async function POST(request: NextRequest) {
       }
     ).catch(() => {});
 
-    // Return immediately — don't wait for judge (saves 10-15s on Vercel)
+    const generationTime = ((Date.now() - startTime) / 1000).toFixed(1);
+    const wordCount = adapted.adaptedContent.split(/\s+/).length;
+
     return NextResponse.json({
       adaptationId,
       documentId,
@@ -270,6 +273,8 @@ export async function POST(request: NextRequest) {
       adaptedContent: adapted.adaptedContent,
       rationale: adapted.rationale,
       reliability: 0,
+      wordCount,
+      generationTime: `${generationTime}s`,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

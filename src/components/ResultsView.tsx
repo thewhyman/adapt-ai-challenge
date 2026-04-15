@@ -28,6 +28,8 @@ interface ResultsViewProps {
   adaptedContent: string;
   rationale: Rationale;
   reliability?: number;
+  wordCount?: number;
+  generationTime?: string;
   onReset: () => void;
   onNewAdaptation: () => void;
 }
@@ -143,6 +145,8 @@ export default function ResultsView({
   adaptedContent,
   rationale,
   reliability,
+  wordCount,
+  generationTime,
   onReset,
   onNewAdaptation,
 }: ResultsViewProps) {
@@ -174,17 +178,19 @@ export default function ResultsView({
             <span className="mx-2 text-zinc-700 font-normal">&middot;</span>
             <span className="font-medium text-zinc-400">{formatName}</span>
           </h1>
-          <p className="text-sm mt-0.5 flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
-              Adaptation complete
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <span className="flex items-center gap-1.5 text-emerald-400 text-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Complete
             </span>
-            {reliability && (
-              <span className={`flex items-center gap-1.5 font-semibold ${reliability >= 90 ? 'text-emerald-400' : reliability >= 70 ? 'text-amber-400' : 'text-red-400'}`}>
-                Reliability: {reliability}%
+            {reliability ? (
+              <span className={`text-xs font-medium ${reliability >= 90 ? 'text-emerald-400' : reliability >= 70 ? 'text-amber-400' : 'text-red-400'}`}>
+                {reliability}% reliable
               </span>
-            )}
-          </p>
+            ) : null}
+            {wordCount ? <span className="text-xs text-zinc-500">{wordCount} words</span> : null}
+            {generationTime ? <span className="text-xs text-zinc-600">{generationTime}</span> : null}
+          </div>
         </div>
         <div className="flex gap-3">
           <button type="button" onClick={onNewAdaptation} className="px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors">

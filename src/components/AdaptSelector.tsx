@@ -137,6 +137,8 @@ export default function AdaptSelector({
         formatName: result.formatName,
         adaptedContent: result.adaptedContent,
         reliability: result.reliability,
+        wordCount: result.wordCount,
+        generationTime: result.generationTime,
         rationale: { ...result.rationale, gaps: result.rationale.gaps || [] },
       });
     } catch (err) {
