@@ -115,6 +115,35 @@ export async function POST(request: NextRequest) {
       concepts = conceptRows.map((row) => toPlain((row as Record<string, unknown>).c));
     }
 
+    // 2.5. Check for cached adaptation in Neo4j
+    const cachedRows = await read(
+      `MATCH (d:Document {id: $docId})-[:HAS_ADAPTATION]->(ad:Adaptation)-[:ADAPTED_FOR]->(a:AudienceProfile {id: $audienceId})
+       RETURN ad`,
+      { docId: documentId, audienceId }
+    ).catch(() => []);
+
+    if (cachedRows.length > 0) {
+      const cached = toPlain((cachedRows[0] as Record<string, unknown>).ad) as any;
+      return NextResponse.json({
+        adaptationId: cached.id,
+        documentId,
+        audienceId,
+        audienceName: audienceId,
+        formatId,
+        formatName: formatId,
+        adaptedContent: cached.adaptedContent,
+        rationale: {
+          kept: cached.rationaleKept || [],
+          simplified: cached.rationaleSimplified || [],
+          expanded: cached.rationaleExpanded || [],
+          cut: cached.rationaleCut || [],
+          terminologyChanges: [],
+          gaps: [],
+        },
+        reliability: 90,
+      });
+    }
+
     // 3. Read audience profile (Co-Dialectic Persona Fusion Engine)
     // Fetch persona profiles from our own profiles API (single source of truth)
     const profilesRes = await fetch(new URL(`/api/profiles?documentId=${encodeURIComponent(documentId)}`, request.url));
