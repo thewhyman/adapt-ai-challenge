@@ -98,7 +98,10 @@ export async function POST(request: NextRequest) {
         if (formatRows.length === 0) { send("error", { error: "Output format not found" }); controller.close(); return; }
         const format = toPlain((formatRows[0] as Record<string, unknown>).f) as OutputFormat;
 
-        // Step 3: Claude adaptation
+        // Step 3: Claude adaptation (heartbeat every 3s so client timer stays alive)
+        const heartbeat = setInterval(() => {
+          send("progress", { step: "Adapting for persona...", elapsed: elapsed() });
+        }, 3000);
         const message = await anthropic.messages.create({
           model: "claude-sonnet-4-6",
           max_tokens: 2048,
@@ -106,6 +109,7 @@ export async function POST(request: NextRequest) {
           messages: [{ role: "user", content: ADAPTATION_USER_PROMPT(doc.title, sections.map((s: any) => ({ ...s, content: s.content?.substring(0, 300) || s.content })), concepts, format) }],
         });
 
+        clearInterval(heartbeat);
         const textBlock = message.content.find((b) => b.type === "text");
         if (!textBlock) { send("error", { error: "No response from Claude" }); controller.close(); return; }
 
