@@ -115,18 +115,9 @@ export async function POST(request: NextRequest) {
     // Generate document ID
     const docId = `doc-${Date.now()}`;
 
-    // Return response immediately — Neo4j writes happen async
-    const response = NextResponse.json({
-      documentId: docId,
-      title: extracted.title,
-      documentType: extracted.documentType,
-      sectionCount: extracted.sections.length,
-      conceptCount: extracted.concepts.length,
-    });
-
-    // Fire-and-forget Neo4j writes — don't block the response
+    // Critical writes — must complete before response (adapt endpoint depends on them)
     // 1. Create document
-    write(
+    await write(
       `CREATE (d:Document {
         id: $docId, title: $title, documentType: $docType,
         dcFormat: $format, overallComplexity: $complexity,
@@ -144,9 +135,9 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // 2. Create sections and link to document
+    // 2. Create sections and link to document (must await — adapt reads these)
     if (extracted.sections.length > 0) {
-      write(
+      await write(
         `MATCH (d:Document {id: $docId})
          UNWIND $sections AS sec
          CREATE (s:Section {
@@ -248,7 +239,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return response;
+    return NextResponse.json({
+      documentId: docId,
+      title: extracted.title,
+      documentType: extracted.documentType,
+      sectionCount: extracted.sections.length,
+      conceptCount: extracted.concepts.length,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     const stack = error instanceof Error ? error.stack?.split("\n").slice(0, 3).join(" | ") : "";
