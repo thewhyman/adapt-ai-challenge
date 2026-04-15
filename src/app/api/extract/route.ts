@@ -36,15 +36,15 @@ interface ExtractionResult {
 
 export async function POST(request: NextRequest) {
   try {
-    const contentType = request.headers.get("content-type") || "";
-    if (!contentType.includes("multipart/form-data")) {
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
       return NextResponse.json(
-        { error: "Expected multipart/form-data. A browser extension may be stripping the Content-Type header. Try incognito mode." },
+        { error: "Could not parse form data. Try incognito mode if browser extensions interfere." },
         { status: 400 }
       );
     }
-
-    const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
     if (!file) {
@@ -79,25 +79,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No text response from Claude" }, { status: 500 });
     }
 
-    // Parse JSON from response (handle markdown code blocks)
+    // Parse JSON from response (handle markdown code blocks and malformed output)
     let jsonStr = textBlock.text.trim();
-    if (jsonStr.startsWith("```")) {
-      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
-    }
+    // Strip markdown fences
+    jsonStr = jsonStr.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?\s*```\s*$/, "");
+    // Find the JSON object if there's extra text around it
+    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+    if (jsonMatch) jsonStr = jsonMatch[0];
 
     let extracted: ExtractionResult;
     try {
       extracted = JSON.parse(jsonStr);
     } catch {
-      const fixed = jsonStr.replace(/(?<=:\s*")([\s\S]*?)(?="(?:\s*[,}\]]))/g, (match) =>
-        match.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
-      );
+      // Fix unescaped newlines, tabs, control chars inside JSON string values
+      const fixed = jsonStr
+        .replace(/[\x00-\x1f]/g, (ch) => {
+          if (ch === '\n') return '\\n';
+          if (ch === '\r') return '\\r';
+          if (ch === '\t') return '\\t';
+          return '';
+        });
       try {
         extracted = JSON.parse(fixed);
       } catch {
         console.error("Failed to parse Claude response:", jsonStr.slice(0, 500));
         return NextResponse.json(
-          { error: "Claude returned malformed JSON. Please try again." },
+          { error: "Extraction produced invalid output. Please try again." },
           { status: 502 }
         );
       }

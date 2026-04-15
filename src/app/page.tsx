@@ -56,6 +56,17 @@ export default function Home() {
     setStep("select");
   }
 
+  function handleEvalDemo() {
+    setExtractResult({
+      documentId: "doc-eval-demo",
+      title: "Palantir Apollo: Continuous Deployment for the Edge",
+      documentType: "Architecture Brief",
+      sectionCount: 3,
+      conceptCount: 3,
+    });
+    setStep("select");
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 transition-colors duration-300">
       <div className="absolute inset-0 bg-[url('/bg-grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20"></div>
@@ -110,6 +121,15 @@ export default function Home() {
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
               />
+              <div className="mt-6 pt-6 border-t border-white/[0.06] text-center">
+                <button
+                  type="button"
+                  onClick={handleEvalDemo}
+                  className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  Or try the 1-Click Evaluator Demo (Palantir Apollo brief)
+                </button>
+              </div>
             </div>
           )}
 
