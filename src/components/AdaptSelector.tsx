@@ -76,8 +76,7 @@ export default function AdaptSelector({
   const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [progressStep, setProgressStep] = useState<string | null>(null);
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [progressSteps, setProgressSteps] = useState<{ step: string; elapsed: string }[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -110,8 +109,7 @@ export default function AdaptSelector({
 
     setError(null);
     setIsLoading(true);
-    setProgressStep("Connecting...");
-    setCompletedSteps([]);
+    setProgressSteps([]);
 
     try {
       const res = await fetch("/api/adapt", {
@@ -142,11 +140,10 @@ export default function AdaptSelector({
             const data = JSON.parse(dataStr);
 
             if (event === "progress") {
-              setProgressStep((prev) => {
-                if (prev && !prev.startsWith(data.step) && !completedSteps.includes(prev.split(' (')[0])) {
-                  setCompletedSteps((cs) => [...cs, prev.split(' (')[0]]);
-                }
-                return data.elapsed ? `${data.step} (${data.elapsed}s)` : data.step;
+              setProgressSteps(prev => {
+                const exists = prev.find(p => p.step === data.step);
+                if (exists) return prev.map(p => p.step === data.step ? { step: data.step, elapsed: data.elapsed || "" } : p);
+                return [...prev, { step: data.step, elapsed: data.elapsed || "" }];
               });
             } else if (event === "error") {
               throw new Error(data.error);
@@ -184,7 +181,7 @@ export default function AdaptSelector({
       setError(err instanceof Error ? err.message : "Adaptation failed");
     } finally {
       setIsLoading(false);
-      setProgressStep(null);
+      setProgressSteps([]);
     }
   }
 
@@ -307,18 +304,22 @@ export default function AdaptSelector({
         Adapt
       </button>
 
-      {isLoading && progressStep && (
-        <div className="mt-5 space-y-2.5">
-          {completedSteps.map((s, i) => (
-            <div key={i} className="flex items-center gap-3 text-sm">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-500/20 text-emerald-400 text-xs">✓</div>
-              <span className="text-zinc-400 font-medium">{s}</span>
-            </div>
-          ))}
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-indigo-500/20 text-indigo-400 text-xs animate-pulse">●</div>
-            <span className="text-zinc-200 font-medium">{progressStep}</span>
-          </div>
+      {isLoading && progressSteps.length > 0 && (
+        <div className="mt-5 space-y-3">
+          {progressSteps.map((s, i) => {
+            const isLast = i === progressSteps.length - 1;
+            return (
+              <div key={i} className="flex items-center gap-3 text-sm">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-xs ${
+                  isLast ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-400"
+                }`}>
+                  {isLast ? "●" : "✓"}
+                </div>
+                <span className={`font-medium ${isLast ? "text-zinc-200" : "text-zinc-400"}`}>{s.step}</span>
+                {s.elapsed && <span className="text-zinc-600 text-xs">{s.elapsed}s</span>}
+              </div>
+            );
+          })}
           <p className="text-[11px] text-zinc-600 mt-2 ml-8">running on micro-infra to conserve costs</p>
         </div>
       )}
