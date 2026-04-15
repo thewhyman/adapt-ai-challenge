@@ -92,15 +92,20 @@ export async function POST(request: NextRequest) {
         { name: "Autonomous Control Plane", definition: "System that calculates constraints without human oversight" }
       ];
     } else {
-      // 1. Read document + sections from Neo4j
-      const docRows = await read(
-        `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section)
-         RETURN d, s ORDER BY s.orderIndex`,
-        { docId: documentId }
-      );
+      // 1. Read document + sections from Neo4j (retry — async writes may still be in flight)
+      let docRows: any[] = [];
+      for (let attempt = 0; attempt < 5; attempt++) {
+        docRows = await read(
+          `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section)
+           RETURN d, s ORDER BY s.orderIndex`,
+          { docId: documentId }
+        );
+        if (docRows.length > 0) break;
+        await new Promise(r => setTimeout(r, 2000));
+      }
 
       if (docRows.length === 0) {
-        return NextResponse.json({ error: "Document not found" }, { status: 404 });
+        return NextResponse.json({ error: "Document not found — extraction may still be processing. Try again in a few seconds." }, { status: 404 });
       }
 
       doc = toPlain((docRows[0] as Record<string, unknown>).d);
