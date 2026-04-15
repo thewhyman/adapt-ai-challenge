@@ -62,6 +62,14 @@ function audienceDescription(a: Audience): string {
   return `${depth} depth, ${a.lengthBudget} length, ${a.terminologyPreference} language`;
 }
 
+const ALL_ADAPT_STEPS = [
+  "Reading structure",
+  "Adapting for persona",
+  "Analyzing gaps",
+  "Validating with independent model",
+  "Scoring reliability",
+];
+
 // ── Component ──
 
 export default function AdaptSelector({
@@ -304,19 +312,21 @@ export default function AdaptSelector({
         Adapt
       </button>
 
-      {isLoading && progressSteps.length > 0 && (
+      {isLoading && (
         <div className="mt-5 space-y-3">
-          {progressSteps.map((s, i) => {
-            const isLast = i === progressSteps.length - 1;
+          {ALL_ADAPT_STEPS.map((label, i) => {
+            const match = progressSteps.find(p => p.step.startsWith(label));
+            const isCompleted = match && progressSteps.some((p, j) => j > progressSteps.indexOf(match!) && p.step !== match!.step);
+            const isActive = match && !isCompleted;
             return (
               <div key={i} className="flex items-center gap-3 text-sm">
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-xs ${
-                  isLast ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-400"
+                  isCompleted ? "bg-emerald-500/20 text-emerald-400" : isActive ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-zinc-800 text-zinc-600"
                 }`}>
-                  {isLast ? "●" : "✓"}
+                  {isCompleted ? "✓" : isActive ? "●" : "○"}
                 </div>
-                <span className={`font-medium ${isLast ? "text-zinc-200" : "text-zinc-400"}`}>{s.step}</span>
-                {s.elapsed && <span className="text-zinc-600 text-xs">{s.elapsed}s</span>}
+                <span className={`font-medium ${isCompleted ? "text-zinc-400" : isActive ? "text-zinc-200" : "text-zinc-600"}`}>{label}</span>
+                {match?.elapsed && <span className="text-zinc-600 text-xs">{match.elapsed}s</span>}
               </div>
             );
           })}
