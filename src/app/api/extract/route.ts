@@ -34,6 +34,8 @@ interface ExtractionResult {
   concepts: ExtractedConcept[];
 }
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     let formData: FormData;

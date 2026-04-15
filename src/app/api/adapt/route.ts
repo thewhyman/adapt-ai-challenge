@@ -8,6 +8,8 @@ import { judgeAdaptation } from "@/lib/hallucination-judge";
 
 const anthropic = new Anthropic();
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const { documentId, audienceId, formatId } = await request.json();
