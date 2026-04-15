@@ -133,6 +133,8 @@ function TerminologySection({
 // Main component
 // ---------------------------------------------------------------------------
 
+type Tab = "content" | "rationale" | "terminology";
+
 export default function ResultsView({
   audienceName,
   formatName,
@@ -141,10 +143,20 @@ export default function ResultsView({
   onReset,
   onNewAdaptation,
 }: ResultsViewProps) {
+  const [activeTab, setActiveTab] = useState<Tab>("content");
+  const termCount = rationale.terminologyChanges.length;
+  const rationaleCount = rationale.kept.length + rationale.simplified.length + rationale.expanded.length + rationale.cut.length;
+
+  const tabs: { id: Tab; label: string; count: number }[] = [
+    { id: "content", label: "Adapted Content", count: 0 },
+    { id: "rationale", label: "Rationale", count: rationaleCount },
+    { id: "terminology", label: "Terminology", count: termCount },
+  ];
+
   return (
     <div className="animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
           <h1 className="text-xl font-bold text-zinc-100">
             {audienceName}
@@ -156,72 +168,66 @@ export default function ResultsView({
             Adaptation complete
           </p>
         </div>
-
         <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onNewAdaptation}
-            className="px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors"
-          >
+          <button type="button" onClick={onNewAdaptation} className="px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-xl hover:bg-zinc-700 transition-colors">
             Different Audience
           </button>
-          <button
-            type="button"
-            onClick={onReset}
-            className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
-          >
+          <button type="button" onClick={onReset} className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all">
             New Document
           </button>
         </div>
       </div>
 
-      {/* Adapted content — full width, premium typography */}
-      <section className="mb-8">
-        <div className="glass-panel rounded-2xl p-8 sm:p-10">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-8">
-            Adapted Content
-          </h2>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 p-1 bg-zinc-900/80 rounded-xl border border-white/[0.06] w-fit">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center gap-2 ${
+              activeTab === tab.id
+                ? "bg-indigo-500/20 text-indigo-300 shadow-sm shadow-indigo-500/10"
+                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+            }`}
+          >
+            {tab.label}
+            {tab.count > 0 && (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                activeTab === tab.id ? "bg-indigo-500/30 text-indigo-300" : "bg-zinc-800 text-zinc-500"
+              }`}>
+                {tab.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      {activeTab === "content" && (
+        <div className="glass-panel rounded-2xl p-8 sm:p-10 animate-fade-in">
           <article className="prose prose-invert prose-lg max-w-none prose-headings:text-zinc-50 prose-headings:font-bold prose-headings:tracking-tight prose-p:text-zinc-300 prose-p:leading-relaxed prose-strong:text-zinc-100 prose-li:text-zinc-300 prose-li:leading-relaxed prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:text-indigo-300 prose-blockquote:border-indigo-500/30 prose-blockquote:text-zinc-400 prose-code:text-indigo-300 prose-code:bg-indigo-500/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-hr:border-white/[0.06]">
             <ReactMarkdown>{adaptedContent}</ReactMarkdown>
           </article>
         </div>
-      </section>
+      )}
 
-      {/* Rationale — full width, horizontal grid of colored cards */}
-      <section>
-        <div className="glass-panel rounded-2xl p-8">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-6">
-            Adaptation Rationale
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <RationaleSection
-              title="Kept"
-              items={rationale.kept}
-              styleKey="kept"
-              defaultOpen
-            />
-            <RationaleSection
-              title="Simplified"
-              items={rationale.simplified}
-              styleKey="simplified"
-              defaultOpen
-            />
-            <RationaleSection
-              title="Expanded"
-              items={rationale.expanded}
-              styleKey="expanded"
-              defaultOpen
-            />
-            <RationaleSection
-              title="Cut"
-              items={rationale.cut}
-              styleKey="cut"
-              defaultOpen
-            />
+      {activeTab === "rationale" && (
+        <div className="glass-panel rounded-2xl p-8 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <RationaleSection title="Kept" items={rationale.kept} styleKey="kept" defaultOpen />
+            <RationaleSection title="Simplified" items={rationale.simplified} styleKey="simplified" defaultOpen />
+            <RationaleSection title="Expanded" items={rationale.expanded} styleKey="expanded" defaultOpen />
+            <RationaleSection title="Cut" items={rationale.cut} styleKey="cut" defaultOpen />
           </div>
+        </div>
+      )}
+
+      {activeTab === "terminology" && (
+        <div className="glass-panel rounded-2xl p-8 animate-fade-in">
           <TerminologySection changes={rationale.terminologyChanges} defaultOpen />
         </div>
-      </section>
+      )}
     </div>
   );
 }
