@@ -244,10 +244,9 @@ function LoadingIndicator() {
   const [stage, setStage] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const stages = [
-    { label: "Parsing PDF", detail: "~2s", duration: 2000 },
-    { label: "Extracting ontology via Claude Haiku (fast)", detail: "~10-15s", duration: 12000 },
-    { label: "Persisting graph to Neo4j", detail: "~3s", duration: 3000 },
-    { label: "Done", detail: "", duration: 0 },
+    { label: "Parsing document" },
+    { label: "Extracting structure" },
+    { label: "Building knowledge graph" },
   ];
 
   useEffect(() => {
@@ -265,19 +264,17 @@ function LoadingIndicator() {
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
       </svg>
       <div className="w-full space-y-2">
-        {stages.slice(0, -1).map((s, i) => (
-          <div key={i} className="flex items-center gap-3 text-xs">
-            <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+        {stages.map((s, i) => (
+          <div key={i} className="flex items-center gap-2.5 text-xs">
+            <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
               i < stage ? "bg-emerald-500/20 text-emerald-400" : i === stage ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-zinc-800 text-zinc-600"
             }`}>
               {i < stage ? "✓" : i === stage ? "●" : "○"}
             </div>
             <span className={`${i <= stage ? "text-zinc-300" : "text-zinc-600"}`}>{s.label}</span>
-            <span className="text-zinc-600 ml-auto">{s.detail}</span>
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-zinc-600 mt-1">{elapsed}s · Running on micro-infra to conserve costs</p>
     </div>
   );
 }
