@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           model: "claude-sonnet-4-6",
           max_tokens: 2048,
           system: ADAPTATION_SYSTEM_PROMPT(profile as AudienceProfile, format),
-          messages: [{ role: "user", content: ADAPTATION_USER_PROMPT(doc.title, sections, concepts, format) }],
+          messages: [{ role: "user", content: ADAPTATION_USER_PROMPT(doc.title, sections.map((s: any) => ({ ...s, content: s.content?.substring(0, 300) || s.content })), concepts, format) }],
         });
 
         const textBlock = message.content.find((b) => b.type === "text");
