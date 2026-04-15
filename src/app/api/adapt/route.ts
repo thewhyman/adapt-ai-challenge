@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     } else {
       // 1. Read document + sections from Neo4j (retry — async writes may still be in flight)
       let docRows: any[] = [];
-      for (let attempt = 0; attempt < 5; attempt++) {
+      for (let attempt = 0; attempt < 8; attempt++) {
         docRows = await read(
           `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section)
            RETURN d, s ORDER BY s.orderIndex`,
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       }
 
       if (docRows.length === 0) {
-        return NextResponse.json({ error: "Document not found — extraction may still be processing. Try again in a few seconds." }, { status: 404 });
+        return NextResponse.json({ error: "Document not found. Please re-upload and try again." }, { status: 404 });
       }
 
       doc = toPlain((docRows[0] as Record<string, unknown>).d);
