@@ -76,6 +76,7 @@ export default function AdaptSelector({
   const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progressStep, setProgressStep] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -108,43 +109,75 @@ export default function AdaptSelector({
 
     setError(null);
     setIsLoading(true);
+    setProgressStep("Connecting...");
 
     try {
       const res = await fetch("/api/adapt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          documentId,
-          audienceId: selectedAudience,
-          formatId: selectedFormat,
-        }),
+        body: JSON.stringify({ documentId, audienceId: selectedAudience, formatId: selectedFormat }),
       });
 
-      const text = await res.text();
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch {
-        throw new Error("Server returned an unexpected response. Please try again.");
-      }
+      const contentType = res.headers.get("content-type") || "";
 
-      if (!res.ok) {
-        throw new Error(result.error ?? `Adaptation failed (${res.status})`);
+      if (contentType.includes("text/event-stream")) {
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const lines = buffer.split("\n\n");
+          buffer = lines.pop() || "";
+
+          for (const block of lines) {
+            const eventMatch = block.match(/^event: (\w+)\ndata: (.+)$/s);
+            if (!eventMatch) continue;
+            const [, event, dataStr] = eventMatch;
+            const data = JSON.parse(dataStr);
+
+            if (event === "progress") {
+              setProgressStep(data.elapsed ? `${data.step} (${data.elapsed}s)` : data.step);
+            } else if (event === "error") {
+              throw new Error(data.error);
+            } else if (event === "result") {
+              onAdapted({
+                adaptationId: data.adaptationId,
+                audienceName: data.audienceName,
+                formatName: data.formatName,
+                adaptedContent: data.adaptedContent,
+                reliability: data.reliability,
+                wordCount: data.wordCount,
+                generationTime: data.generationTime,
+                rationale: { ...data.rationale, gaps: data.rationale.gaps || [] },
+              });
+            }
+          }
+        }
+      } else {
+        const text = await res.text();
+        let result;
+        try { result = JSON.parse(text); } catch { throw new Error("Unexpected response."); }
+        if (!res.ok) throw new Error(result.error ?? `Failed (${res.status})`);
+        onAdapted({
+          adaptationId: result.adaptationId,
+          audienceName: result.audienceName,
+          formatName: result.formatName,
+          adaptedContent: result.adaptedContent,
+          reliability: result.reliability,
+          wordCount: result.wordCount,
+          generationTime: result.generationTime,
+          rationale: { ...result.rationale, gaps: result.rationale?.gaps || [] },
+        });
       }
-      onAdapted({
-        adaptationId: result.adaptationId,
-        audienceName: result.audienceName,
-        formatName: result.formatName,
-        adaptedContent: result.adaptedContent,
-        reliability: result.reliability,
-        wordCount: result.wordCount,
-        generationTime: result.generationTime,
-        rationale: { ...result.rationale, gaps: result.rationale.gaps || [] },
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Adaptation failed");
     } finally {
       setIsLoading(false);
+      setProgressStep(null);
     }
   }
 
@@ -285,23 +318,9 @@ export default function AdaptSelector({
             />
           </svg>
         )}
-        {isLoading ? <AdaptProgress /> : "Adapt"}
+        {isLoading ? (progressStep || "Processing...") : "Adapt"}
       </button>
     </div>
   );
 }
 
-function AdaptProgress() {
-  const [stage, setStage] = useState(0);
-  const stages = ["Reading structure...", "Adapting for persona...", "Analyzing gaps...", "Validating with independent model...", "Scoring reliability..."];
-
-  useEffect(() => {
-    const t1 = setTimeout(() => setStage(1), 2000);
-    const t2 = setTimeout(() => setStage(2), 12000);
-    const t3 = setTimeout(() => setStage(3), 20000);
-    const t4 = setTimeout(() => setStage(4), 28000);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
-  }, []);
-
-  return <span>{stages[stage]}</span>;
-}
