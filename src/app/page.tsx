@@ -49,13 +49,13 @@ export default function Home() {
   function handleExtracted(result: ExtractResult) {
     setExtractResult(result);
     setStep("select");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo(0, 0);
   }
 
   function handleAdapted(result: AdaptResult) {
     setAdaptResult(result);
     setStep("results");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo(0, 0);
   }
 
   function handleReset() {
