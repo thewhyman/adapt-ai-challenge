@@ -260,6 +260,18 @@ export async function POST(request: NextRequest) {
       }
     ).catch(() => {});
 
+    // Run judge in parallel with Neo4j write — both happen while we prepare response
+    const sourceText = sections.map((s: any) => `${s.title}: ${s.content}`).join("\n");
+    let reliability = 0;
+    let missedGaps: string[] = [];
+    try {
+      const judgeResult = await judgeAdaptation(sourceText, adapted.adaptedContent, profile.name);
+      reliability = judgeResult.reliability;
+      missedGaps = judgeResult.missedGaps || [];
+    } catch {
+      reliability = 0;
+    }
+
     const generationTime = ((Date.now() - startTime) / 1000).toFixed(1);
     const wordCount = adapted.adaptedContent.split(/\s+/).length;
 
@@ -271,8 +283,11 @@ export async function POST(request: NextRequest) {
       formatId,
       formatName: format.name,
       adaptedContent: adapted.adaptedContent,
-      rationale: adapted.rationale,
-      reliability: 0,
+      rationale: {
+        ...adapted.rationale,
+        gaps: [...(adapted.rationale.gaps || []), ...missedGaps.map((g: string) => `[Judge] ${g}`)]
+      },
+      reliability,
       wordCount,
       generationTime: `${generationTime}s`,
     });
