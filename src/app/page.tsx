@@ -64,7 +64,60 @@ export default function Home() {
       sectionCount: 3,
       conceptCount: 3,
     });
-    setStep("select");
+    setAdaptResult({
+      adaptationId: "demo-instant",
+      audienceName: "The Visionary Builder (Steve Jobs + Jony Ive)",
+      formatName: "Executive Summary",
+      adaptedContent: `## Why Apollo Matters
+
+Palantir solved a problem nobody else would touch: **how do you push software updates to places with no internet?**
+
+Think military bases in remote locations, oil rigs, classified government facilities — environments where "just deploy to the cloud" is laughable. These are places where a failed update doesn't mean a support ticket. It means people can't do their jobs. Sometimes it means worse.
+
+### The Core Insight
+
+Most deployment systems assume connectivity. Apollo assumes the opposite. It packages everything — code, dependencies, configuration — into a self-contained unit that can evaluate its own environment, decide if it's safe to deploy, and roll back autonomously if something breaks.
+
+No human in the loop. No phone-home to a central server. The software makes the call.
+
+### What Makes This Different
+
+**Autonomous decision-making at the edge.** The control plane doesn't just push updates — it reasons about constraints. Network bandwidth, hardware capabilities, security clearances, dependency conflicts. If the math doesn't work, it doesn't deploy. If it deploys and something breaks, it reverses itself.
+
+**This is the future of all software deployment**, not just defense. Every enterprise with distributed operations — retail stores, hospital networks, manufacturing floors, fleet vehicles — faces the same fundamental problem: you can't assume reliable connectivity, and you can't afford failed updates.
+
+### The Bottom Line
+
+Apollo turns deployment from a prayer into a guarantee. Ship anywhere, verify locally, fail safely. The infrastructure disappears so the mission can proceed.`,
+      rationale: {
+        kept: [
+          "Core autonomous deployment concept — this is the product's reason to exist",
+          "Edge computing and disconnected environment focus — the key differentiator",
+          "Self-healing rollback capability — the trust-builder for risk-averse buyers"
+        ],
+        simplified: [
+          "Control plane architecture details → distilled to 'reasons about constraints'",
+          "Dependency resolution algorithms → 'packages everything into a self-contained unit'",
+          "Network topology requirements → 'places with no internet'"
+        ],
+        expanded: [
+          "Added real-world analogies (military bases, oil rigs, hospital networks) for visceral understanding",
+          "Connected to broader industry trend — not just defense, all distributed enterprises",
+          "Reframed technical rollback as emotional benefit: 'deployment from prayer into guarantee'"
+        ],
+        cut: [
+          "API specification details — irrelevant to a visionary builder's decision",
+          "Version compatibility matrices — operational detail, not strategic insight",
+          "Benchmark performance numbers — the story matters more than the metrics at this altitude"
+        ],
+        terminologyChanges: [
+          { original: "Continuous Deployment Pipeline", adapted: "autonomous update system", reason: "Builder thinks in outcomes, not DevOps jargon" },
+          { original: "Air-gapped environments", adapted: "places with no internet", reason: "Visceral and immediate — no translation needed" },
+          { original: "Constraint satisfaction engine", adapted: "reasons about constraints", reason: "Humanized — the system thinks, not computes" }
+        ]
+      }
+    });
+    setStep("results");
   }
 
   return (
