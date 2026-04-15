@@ -84,8 +84,9 @@ Results: Adapted Content | Rationale | Terminology | Gaps to Fill
 - **Enterprise RBAC** — audience profiles mapped to Azure AD / Okta roles.
 
 ### Phase 4 — Vision
-- **Co-Dialectic Chrome Extension** — local LLM as prompt quality gate before any cloud model. Inverted Advisor pattern. Reduces inference costs for providers.
-- **Federated knowledge** — ontology patterns shared across deployments without exposing source content. Connects to Agency OS architecture (provisional patent filed).
+- **Co-Dialectic Chrome Extension** — local LLM as prompt quality gate before any cloud model. Reduces inference costs for providers.
+- **Federated knowledge** — ontology patterns shared across deployments without exposing source content.
+- **Multi-tenant enterprise platform** — team-wide persona libraries, shared ontologies, usage analytics.
 
 ---
 
@@ -132,7 +133,7 @@ npm run dev                  # http://localhost:3000
 
 ## The Broader Vision
 
-V1 is one module of a substantially larger system — a self-evolving multi-agent OS where agents share learned insights across deployments without exposing underlying data. A provisional patent has been filed on the full architecture concurrent with this submission.
+V1 is one module of a substantially larger system. I would welcome the opportunity to walk through the complete vision under NDA.
 
 ---
 
