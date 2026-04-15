@@ -84,9 +84,9 @@ Results: Adapted Content | Rationale | Terminology | Gaps to Fill
 - **Enterprise RBAC** — audience profiles mapped to Azure AD / Okta roles.
 
 ### Phase 4 — Vision
-- **Co-Dialectic Chrome Extension** — local LLM as prompt quality gate before any cloud model. Reduces inference costs for providers.
-- **Federated knowledge** — ontology patterns shared across deployments without exposing source content.
-- **Multi-tenant enterprise platform** — team-wide persona libraries, shared ontologies, usage analytics.
+- **Multi-document ontology** — cross-document knowledge web via shared Concept nodes. Upload 10 docs, the graph connects them automatically.
+- **Enterprise platform** — team-wide persona libraries, shared ontologies, RBAC, usage analytics.
+- **API-first distribution** — embed Adapt AI's adaptation engine into any enterprise workflow via REST API.
 
 ---
 
