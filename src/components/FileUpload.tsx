@@ -275,6 +275,7 @@ function LoadingIndicator() {
           </div>
         ))}
       </div>
+      <p className="text-[10px] text-zinc-600 mt-2">running on micro-infra to conserve costs</p>
     </div>
   );
 }

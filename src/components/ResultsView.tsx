@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 // ---------------------------------------------------------------------------
@@ -147,7 +147,12 @@ export default function ResultsView({
   onNewAdaptation,
 }: ResultsViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>("content");
+  const topRef = useRef<HTMLDivElement>(null);
   const termCount = rationale.terminologyChanges.length;
+
+  useEffect(() => {
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
   const rationaleCount = rationale.kept.length + rationale.simplified.length + rationale.expanded.length + rationale.cut.length;
 
   const gapCount = rationale.gaps?.length ?? 0;
@@ -160,7 +165,7 @@ export default function ResultsView({
   ];
 
   return (
-    <div className="animate-fade-in">
+    <div ref={topRef} className="animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
