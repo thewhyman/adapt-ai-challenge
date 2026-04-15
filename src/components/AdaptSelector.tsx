@@ -292,7 +292,7 @@ export default function AdaptSelector({
 function AdaptProgress() {
   const [stage, setStage] = useState(0);
   const [elapsed, setElapsed] = useState(0);
-  const stages = ["Reading graph...", "Channeling persona via Claude Sonnet...", "Generating adaptation + gaps...", "Finalizing..."];
+  const stages = ["Reading graph from Neo4j...", "Adapting via Claude Sonnet (quality)...", "Generating rationale + gap analysis...", "Finalizing..."];
 
   useEffect(() => {
     const timer = setInterval(() => setElapsed(e => e + 1), 1000);

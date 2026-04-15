@@ -245,8 +245,8 @@ function LoadingIndicator() {
   const [elapsed, setElapsed] = useState(0);
   const stages = [
     { label: "Parsing PDF", detail: "~2s", duration: 2000 },
-    { label: "Extracting ontology via Claude Haiku", detail: "~10-15s", duration: 12000 },
-    { label: "Storing knowledge graph in Neo4j", detail: "~3s", duration: 3000 },
+    { label: "Extracting ontology via Claude Haiku (fast)", detail: "~10-15s", duration: 12000 },
+    { label: "Persisting graph to Neo4j", detail: "~3s", duration: 3000 },
     { label: "Done", detail: "", duration: 0 },
   ];
 
