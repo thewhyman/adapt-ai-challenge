@@ -293,13 +293,14 @@ export default function AdaptSelector({
 
 function AdaptProgress() {
   const [stage, setStage] = useState(0);
-  const stages = ["Reading structure...", "Adapting for persona...", "Analyzing gaps...", "Finalizing..."];
+  const stages = ["Reading structure...", "Adapting for persona...", "Analyzing gaps...", "Validating with independent model...", "Scoring reliability..."];
 
   useEffect(() => {
     const t1 = setTimeout(() => setStage(1), 2000);
-    const t2 = setTimeout(() => setStage(2), 10000);
-    const t3 = setTimeout(() => setStage(3), 22000);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    const t2 = setTimeout(() => setStage(2), 12000);
+    const t3 = setTimeout(() => setStage(3), 20000);
+    const t4 = setTimeout(() => setStage(4), 28000);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
   }, []);
 
   return <span>{stages[stage]}</span>;
