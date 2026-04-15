@@ -116,10 +116,26 @@ export async function POST(request: NextRequest) {
         try {
           adapted = JSON.parse(jsonStr);
         } catch {
-          const fixed = jsonStr.replace(/[\x00-\x1f]/g, (ch) => ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : ch === '\t' ? '\\t' : '');
-          try { adapted = JSON.parse(fixed); } catch {
-            send("error", { error: "Adaptation produced invalid output. Please retry." });
-            controller.close(); return;
+          const fixed = jsonStr
+            .replace(/[\x00-\x1f]/g, (ch) => ch === '\n' ? '\\n' : ch === '\r' ? '\\r' : ch === '\t' ? '\\t' : '')
+            .replace(/\\'/g, "'");
+          try {
+            adapted = JSON.parse(fixed);
+          } catch {
+            // Last resort: extract adaptedContent from the raw text and build minimal rationale
+            const contentMatch = jsonStr.match(/"adaptedContent"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"rationale|"\s*\})/);
+            if (contentMatch) {
+              adapted = {
+                adaptedContent: contentMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'),
+                rationale: { kept: [], simplified: [], expanded: [], cut: [], terminologyChanges: [], gaps: ["[System] Full rationale unavailable — JSON parse error. Content was extracted successfully."] }
+              };
+            } else {
+              // Absolute last resort: treat entire response as adapted content
+              adapted = {
+                adaptedContent: textBlock.text,
+                rationale: { kept: [], simplified: [], expanded: [], cut: [], terminologyChanges: [], gaps: ["[System] Response was not in expected JSON format. Raw output shown."] }
+              };
+            }
           }
         }
 

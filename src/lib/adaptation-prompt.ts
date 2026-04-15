@@ -55,18 +55,6 @@ ${concepts.map((c) => `- **${c.name}** (depth ${c.technicalDepth}/5): ${c.defini
 
 **Required output structure:** ${format.structure.join(" → ")}
 
-Respond with valid JSON matching this exact schema:
+CRITICAL: Respond with ONLY valid JSON. No markdown fences, no text before or after. Use this exact 1-shot example as your template:
 
-{
-  "adaptedContent": "string — the full adapted document in markdown, following the required output structure",
-  "rationale": {
-    "kept": ["string — what was kept and why (one entry per decision)"],
-    "simplified": ["string — what was simplified and how"],
-    "expanded": ["string — what was expanded and why"],
-    "cut": ["string — what was removed and why"],
-    "terminologyChanges": [
-      { "original": "string", "adapted": "string", "reason": "string" }
-    ],
-    "gaps": ["string — information this persona would expect but the source document does not contain. Each entry: what's missing + what to ask the author for"]
-  }
-}`;
+{"adaptedContent":"## Title\\n\\nFirst paragraph.\\n\\n### Subheading\\n\\nSecond paragraph.","rationale":{"kept":["Core concept X — essential for this persona"],"simplified":["Technical detail Y → accessible framing"],"expanded":["Added context Z the persona needs"],"cut":["Removed irrelevant detail W"],"terminologyChanges":[{"original":"jargon","adapted":"plain term","reason":"audience clarity"}],"gaps":["[GAP] This persona expects ROI data not in the source. Ask author for: specific metrics."]}}`;
