@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
       };
       const startTime = Date.now();
       const elapsed = () => ((Date.now() - startTime) / 1000).toFixed(1);
+      const DEADLINE_MS = 55000;
 
       try {
         // Step 1: Read from Neo4j
@@ -141,17 +142,21 @@ export async function POST(request: NextRequest) {
 
         send("progress", { step: "Analyzing gaps...", elapsed: elapsed() });
 
-        // Step 4: LLM Judge
-        send("progress", { step: "Validating with independent model...", elapsed: elapsed() });
-
+        // Step 4: LLM Judge (skip if close to deadline)
         const sourceText = sections.map((s: any) => `${s.title}: ${s.content}`).join("\n");
         let reliability = 0;
         let missedGaps: string[] = [];
-        try {
-          const judgeResult = await judgeAdaptation(sourceText, adapted.adaptedContent, profile.name);
-          reliability = judgeResult.reliability;
-          missedGaps = judgeResult.missedGaps || [];
-        } catch { reliability = 0; }
+        if (Date.now() - startTime < DEADLINE_MS - 15000) {
+          send("progress", { step: "Validating with independent model...", elapsed: elapsed() });
+          try {
+            const judgeResult = await judgeAdaptation(sourceText, adapted.adaptedContent, profile.name);
+            reliability = judgeResult.reliability;
+            missedGaps = judgeResult.missedGaps || [];
+          } catch { reliability = 0; }
+        } else {
+          send("progress", { step: "Skipping validation (time constrained)...", elapsed: elapsed() });
+          reliability = 0;
+        }
 
         send("progress", { step: "Scoring reliability...", elapsed: elapsed() });
 
@@ -166,8 +171,9 @@ export async function POST(request: NextRequest) {
         write(
           `MATCH (d:Document {id: $docId}) MATCH (f:OutputFormat {id: $formatId})
            CREATE (ad:Adaptation { id: $adaptationId, adaptedContent: $content, rationaleKept: $kept, rationaleCut: $cut, rationaleSimplified: $simplified, rationaleExpanded: $expanded, terminologyChanges: $termChanges, createdAt: datetime() })
-           CREATE (d)-[:HAS_ADAPTATION]->(ad) CREATE (ad)-[:USES_FORMAT]->(f)`,
-          { docId: documentId, formatId, adaptationId, content: adapted.adaptedContent, kept: adapted.rationale.kept || [], cut: adapted.rationale.cut || [], simplified: adapted.rationale.simplified || [], expanded: adapted.rationale.expanded || [], termChanges }
+           CREATE (d)-[:HAS_ADAPTATION]->(ad) CREATE (ad)-[:USES_FORMAT]->(f)
+           WITH ad MERGE (a:AudienceProfile {id: $audienceId}) CREATE (ad)-[:ADAPTED_FOR]->(a)`,
+          { docId: documentId, formatId, audienceId, adaptationId, content: adapted.adaptedContent, kept: adapted.rationale.kept || [], cut: adapted.rationale.cut || [], simplified: adapted.rationale.simplified || [], expanded: adapted.rationale.expanded || [], termChanges }
         ).catch(() => {});
 
         // Final result
