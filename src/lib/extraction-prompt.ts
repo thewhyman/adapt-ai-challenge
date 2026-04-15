@@ -26,32 +26,6 @@ export const EXTRACTION_USER_PROMPT = (content: string, fileName: string) => `An
 **Document content:**
 ${content}
 
-Respond with valid JSON matching this exact schema:
+CRITICAL: Respond with ONLY valid JSON. No markdown fences, no text before or after. Use this 1-shot example as your template:
 
-{
-  "title": "string — document title (infer from content if not explicit)",
-  "documentType": "technical_doc | training_material | research | sop | general",
-  "overallComplexity": 1-5,
-  "audienceAssumptions": ["string — what expertise the original assumes"],
-  "sections": [
-    {
-      "id": "section-1 (sequential)",
-      "title": "string",
-      "content": "string — 2-3 sentence summary of this section (NOT the full text)",
-      "complexity": 1-5,
-      "purpose": "context | core_argument | evidence | action_item | reference",
-      "orderIndex": 0,
-      "dependsOn": ["section IDs this section requires reading first"],
-      "mentionsConcepts": ["concept IDs referenced in this section"]
-    }
-  ],
-  "concepts": [
-    {
-      "id": "concept-kebab-case-name",
-      "name": "string — the term",
-      "definition": "string — concise definition in context of this document",
-      "technicalDepth": 1-5,
-      "relatedConcepts": ["other concept IDs that are semantically related"]
-    }
-  ]
-}`;
+{"title":"Example Document","documentType":"technical_doc","overallComplexity":3,"audienceAssumptions":["Familiarity with software engineering"],"sections":[{"id":"section-1","title":"Introduction","content":"This section introduces the core problem and approach.","complexity":2,"purpose":"context","orderIndex":0,"dependsOn":[],"mentionsConcepts":["concept-core-idea"]}],"concepts":[{"id":"concept-core-idea","name":"Core Idea","definition":"The central concept of the document.","technicalDepth":3,"relatedConcepts":[]}]}`;

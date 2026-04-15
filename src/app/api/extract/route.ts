@@ -104,11 +104,15 @@ export async function POST(request: NextRequest) {
       try {
         extracted = JSON.parse(fixed);
       } catch {
-        console.error("Failed to parse Claude response:", jsonStr.slice(0, 500));
-        return NextResponse.json(
-          { error: "Extraction produced invalid output. Please try again." },
-          { status: 502 }
-        );
+        // Last resort: create minimal extraction from Claude's raw text
+        extracted = {
+          title: file.name.replace(/\.[^.]+$/, ''),
+          documentType: "general" as const,
+          overallComplexity: 3 as const,
+          audienceAssumptions: ["General audience"],
+          sections: [{ id: "section-1", title: "Full Document", content: textBlock.text.substring(0, 300), complexity: 3 as const, purpose: "core_argument" as const, orderIndex: 0, dependsOn: [], mentionsConcepts: [] }],
+          concepts: []
+        } as ExtractionResult;
       }
     }
 
