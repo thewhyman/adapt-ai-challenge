@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* Base styles — raw CSS only, no @apply (Tailwind v4 @apply requires @reference in global CSS) */
 body {
