@@ -145,12 +145,12 @@ export default function AdaptSelector({
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-xl font-semibold text-zinc-100">
           Adapt Document
         </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-zinc-400">
           Choose an audience and format for{" "}
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">
+          <span className="font-medium text-zinc-300">
             {documentTitle}
           </span>
         </p>
@@ -158,14 +158,14 @@ export default function AdaptSelector({
 
       {/* Fetch error */}
       {fetchError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
+        <div className="rounded-xl border border-red-800 bg-red-950/50 p-4 text-sm text-red-400">
           {fetchError}
         </div>
       )}
 
       {/* Audience cards */}
       <fieldset disabled={isLoading}>
-        <legend className="mb-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <legend className="mb-3 text-sm font-medium text-zinc-300">
           Target Audience
         </legend>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -176,19 +176,19 @@ export default function AdaptSelector({
                 key={a.id}
                 type="button"
                 onClick={() => setSelectedAudience(a.id)}
-                className={`rounded-lg border-2 p-4 text-left transition-all ${
+                className={`rounded-xl border-2 p-4 text-left transition-all ${
                   selected
-                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200 dark:border-blue-400 dark:bg-blue-950 dark:ring-blue-800"
-                    : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                    ? "border-indigo-500/60 bg-indigo-500/10 ring-1 ring-indigo-500/30"
+                    : "border-zinc-700/50 bg-zinc-900/50 hover:border-zinc-600 hover:bg-zinc-900/80"
                 }`}
               >
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="font-medium text-zinc-100">
                   {a.name}
                 </p>
-                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-0.5 text-xs text-zinc-500">
                   {a.roleName} &middot; {a.orgLevel}
                 </p>
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="mt-2 text-sm text-zinc-400">
                   {audienceDescription(a)}
                 </p>
               </button>
@@ -199,7 +199,7 @@ export default function AdaptSelector({
 
       {/* Format cards */}
       <fieldset disabled={isLoading}>
-        <legend className="mb-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <legend className="mb-3 text-sm font-medium text-zinc-300">
           Output Format
         </legend>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -210,19 +210,19 @@ export default function AdaptSelector({
                 key={f.id}
                 type="button"
                 onClick={() => setSelectedFormat(f.id)}
-                className={`rounded-lg border-2 p-4 text-left transition-all ${
+                className={`rounded-xl border-2 p-4 text-left transition-all ${
                   selected
-                    ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200 dark:border-blue-400 dark:bg-blue-950 dark:ring-blue-800"
-                    : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                    ? "border-indigo-500/60 bg-indigo-500/10 ring-1 ring-indigo-500/30"
+                    : "border-zinc-700/50 bg-zinc-900/50 hover:border-zinc-600 hover:bg-zinc-900/80"
                 }`}
               >
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="font-medium text-zinc-100">
                   {f.name}
                 </p>
-                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-0.5 text-xs text-zinc-500">
                   up to {f.maxWords.toLocaleString()} words
                 </p>
-                <ul className="mt-2 space-y-0.5 text-sm text-zinc-600 dark:text-zinc-400">
+                <ul className="mt-2 space-y-0.5 text-sm text-zinc-400">
                   {f.structure.map((s) => (
                     <li key={s} className="flex items-start gap-1.5">
                       <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400" />
@@ -238,7 +238,7 @@ export default function AdaptSelector({
 
       {/* Adapt error */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
+        <div className="rounded-xl border border-red-800 bg-red-950/50 p-4 text-sm text-red-400">
           {error}
         </div>
       )}
@@ -248,7 +248,7 @@ export default function AdaptSelector({
         type="button"
         disabled={!canAdapt}
         onClick={handleAdapt}
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-indigo-500/25 hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isLoading && (
           <svg

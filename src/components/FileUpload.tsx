@@ -137,12 +137,12 @@ export default function FileUpload({ onExtracted, isLoading, setIsLoading }: Fil
         }}
         className={`
           relative flex flex-col items-center justify-center gap-3
-          rounded-lg border-2 border-dashed p-8 transition-colors
+          rounded-xl border-2 border-dashed p-10 transition-all duration-300
           cursor-pointer select-none outline-none
-          focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
+          focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950
           ${isDragOver
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
-            : "border-zinc-300 bg-zinc-50 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500"
+            ? "border-indigo-500/60 bg-indigo-500/10"
+            : "border-zinc-700 bg-zinc-900/50 hover:border-zinc-500 hover:bg-zinc-900/80"
           }
           ${isLoading ? "pointer-events-none opacity-60" : ""}
         `}
@@ -167,7 +167,7 @@ export default function FileUpload({ onExtracted, isLoading, setIsLoading }: Fil
 
       {/* Error message */}
       {error && (
-        <p className="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">
+        <p className="mt-3 text-sm text-red-400" role="alert">
           {error}
         </p>
       )}
@@ -177,7 +177,7 @@ export default function FileUpload({ onExtracted, isLoading, setIsLoading }: Fil
         <button
           type="button"
           onClick={handleSubmit}
-          className="mt-4 w-full rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="mt-4 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-indigo-500/25 hover:brightness-110 active:scale-[0.98]"
         >
           Extract Structure
         </button>
@@ -192,10 +192,10 @@ function DropZonePrompt() {
   return (
     <>
       <UploadIcon />
-      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <p className="text-sm font-medium text-zinc-300">
         Drag and drop a file here, or click to browse
       </p>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs text-zinc-500">
         PDF or DOCX up to {MAX_FILE_SIZE_MB} MB
       </p>
     </>
@@ -206,7 +206,7 @@ function SelectedFile({ name, onRemove }: { name: string; onRemove: () => void }
   return (
     <div className="flex items-center gap-3">
       <FileIcon />
-      <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 truncate max-w-xs">
+      <span className="text-sm font-medium text-zinc-200 truncate max-w-xs">
         {name}
       </span>
       <button
@@ -215,7 +215,7 @@ function SelectedFile({ name, onRemove }: { name: string; onRemove: () => void }
           e.stopPropagation();
           onRemove();
         }}
-        className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-300"
+        className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-zinc-300"
         aria-label="Remove file"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -230,7 +230,7 @@ function LoadingIndicator() {
   return (
     <div className="flex flex-col items-center gap-3">
       <svg
-        className="h-8 w-8 animate-spin text-zinc-500 dark:text-zinc-400"
+        className="h-8 w-8 animate-spin text-indigo-400"
         fill="none"
         viewBox="0 0 24 24"
       >
@@ -241,7 +241,7 @@ function LoadingIndicator() {
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
         />
       </svg>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-zinc-400">
         Extracting document structure...
       </p>
     </div>
@@ -251,7 +251,7 @@ function LoadingIndicator() {
 function UploadIcon() {
   return (
     <svg
-      className="h-10 w-10 text-zinc-400 dark:text-zinc-500"
+      className="h-10 w-10 text-zinc-500"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -269,7 +269,7 @@ function UploadIcon() {
 function FileIcon() {
   return (
     <svg
-      className="h-5 w-5 flex-shrink-0 text-zinc-500 dark:text-zinc-400"
+      className="h-5 w-5 flex-shrink-0 text-zinc-400"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"

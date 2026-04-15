@@ -57,23 +57,25 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
-      <div className="absolute inset-0 bg-[url('/bg-grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-50"></div>
+    <div className="min-h-screen bg-zinc-950 transition-colors duration-300">
+      <div className="absolute inset-0 bg-[url('/bg-grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20"></div>
+      <div className="ambient-glow ambient-glow-blue"></div>
+      <div className="ambient-glow ambient-glow-indigo"></div>
       
-      <header className="relative border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-md z-10">
+      <header className="relative border-b border-white/[0.06] bg-black/30 backdrop-blur-xl z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-xs text-white">A</span>
+            <h1 className="text-xl font-bold tracking-tight text-zinc-50 flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs text-white shadow-lg shadow-indigo-500/25">A</span>
               Adapt AI
             </h1>
             <p className="text-sm font-medium gradient-text mt-0.5">
               Co-Dialectic Persona Engine
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <div className="hidden sm:flex items-center gap-4 text-sm font-medium text-zinc-400">
             <span>Ontology Extraction</span>
-            <span className="w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700"></span>
+            <span className="w-1 h-1 rounded-full bg-zinc-700"></span>
             <span>Graph Adaptation</span>
           </div>
         </div>
@@ -83,14 +85,14 @@ export default function Home() {
         
         {step !== "results" && (
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-center tracking-tight text-zinc-900 dark:text-zinc-50 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-center tracking-tight text-zinc-50 mb-4 animate-fade-in">
               Adapt context, not just content.
             </h2>
-            <p className="text-center text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto text-lg leading-relaxed mb-12">
-              Transform strict static documents into fluid knowledge targeted uniquely at specific executive functions using our fused-persona engine.
+            <p className="text-center text-zinc-400 max-w-2xl mx-auto text-lg leading-relaxed mb-12 animate-fade-in-delay-1">
+              Transform dense documents into targeted intelligence for any audience — powered by ontology extraction and persona-driven synthesis.
             </p>
 
-            <div className="flex justify-center items-center gap-3">
+            <div className="flex justify-center items-center gap-3 animate-fade-in-delay-2">
               <StepBadge number={1} label="Extract Ontology" active={step === "upload"} done={step !== "upload"} />
               <StepDivider />
               <StepBadge number={2} label="Co-Dialectic Target" active={step === "select"} done={step === "results"} />
@@ -102,7 +104,7 @@ export default function Home() {
 
         <div className="transition-all duration-500 ease-out transform">
           {step === "upload" && (
-            <div className="glass-panel rounded-2xl p-8 max-w-2xl mx-auto">
+            <div className="glass-panel rounded-2xl p-8 max-w-2xl mx-auto animate-fade-in">
               <FileUpload
                 onExtracted={handleExtracted}
                 isLoading={isLoading}
@@ -113,19 +115,19 @@ export default function Home() {
 
           {step === "select" && extractResult && (
             <div className="space-y-6 max-w-4xl mx-auto">
-              <div className="glass-panel p-6 rounded-2xl flex items-center justify-between">
+              <div className="glass-panel p-6 rounded-2xl flex items-center justify-between animate-fade-in">
                 <div>
-                  <h3 className="text-sm font-semibold tracking-wider text-indigo-600 dark:text-indigo-400 uppercase mb-1">Source Ontology Extracted</h3>
-                  <h2 className="text-xl font-medium text-zinc-900 dark:text-zinc-100">{extractResult.title}</h2>
+                  <h3 className="text-sm font-semibold tracking-wider text-indigo-400 uppercase mb-1">Source Ontology Extracted</h3>
+                  <h2 className="text-xl font-medium text-zinc-100">{extractResult.title}</h2>
                   <div className="flex items-center gap-3 mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500"></span> {extractResult.sectionCount} Nodes</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> {extractResult.conceptCount} Edges</span>
-                    <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs font-medium">{extractResult.documentType}</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></span> {extractResult.sectionCount} Nodes</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span> {extractResult.conceptCount} Edges</span>
+                    <span className="px-2 py-0.5 rounded-full bg-zinc-800 text-xs font-medium text-zinc-300">{extractResult.documentType}</span>
                   </div>
                 </div>
                 <button
                   onClick={handleReset}
-                  className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
                 >
                   Change Origin
                 </button>
@@ -163,19 +165,19 @@ export default function Home() {
 
 function StepBadge({ number, label, active, done }: { number: number; label: string; active: boolean; done: boolean }) {
   const bgClass = active
-    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-md ring-4 ring-zinc-900/10 dark:ring-white/10"
+    ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
     : done
-    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400"
-    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500";
+    ? "bg-indigo-900/30 text-indigo-400"
+    : "bg-zinc-800 text-zinc-500";
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all duration-300 ${active ? 'bg-white/80 dark:bg-zinc-900/80 shadow-sm border border-zinc-200 dark:border-zinc-800' : ''}`}>
+    <div className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all duration-300 ${active ? 'bg-zinc-900/80 shadow-sm border border-white/[0.08] step-active-glow' : ''}`}>
       <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${bgClass}`}>
         {done ? (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
         ) : number}
       </span>
-      <span className={`text-sm font-semibold tracking-wide ${active ? "text-zinc-900 dark:text-indigo-300" : done ? "text-indigo-700 dark:text-indigo-400" : "text-zinc-400 dark:text-zinc-500"}`}>
+      <span className={`text-sm font-semibold tracking-wide ${active ? "text-indigo-300" : done ? "text-indigo-400" : "text-zinc-500"}`}>
         {label}
       </span>
     </div>
@@ -183,5 +185,5 @@ function StepBadge({ number, label, active, done }: { number: number; label: str
 }
 
 function StepDivider() {
-  return <div className="w-12 h-[2px] bg-zinc-200 dark:bg-zinc-800 rounded-full" />;
+  return <div className="w-12 h-[2px] bg-zinc-800 rounded-full" />;
 }
