@@ -144,7 +144,8 @@ export default function Home() {
 
               {/* Upload */}
               <div>
-                <p className="text-sm text-zinc-500 text-center mb-4">Or upload your own document</p>
+                <p className="text-sm text-zinc-500 text-center mb-2">Or upload your own document</p>
+              <p className="text-xs text-zinc-600 text-center mb-4">Need a PDF? Try <a href="https://arxiv.org/pdf/2302.11382" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 underline">this prompt engineering paper</a></p>
                 <div className="glass-panel rounded-2xl p-8 max-w-2xl mx-auto">
                   <FileUpload
                     onExtracted={handleExtracted}
