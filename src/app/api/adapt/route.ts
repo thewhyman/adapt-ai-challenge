@@ -92,17 +92,12 @@ export async function POST(request: NextRequest) {
         { name: "Autonomous Control Plane", definition: "System that calculates constraints without human oversight" }
       ];
     } else {
-      // 1. Read document + sections from Neo4j (retry — async writes may still be in flight)
-      let docRows: any[] = [];
-      for (let attempt = 0; attempt < 8; attempt++) {
-        docRows = await read(
-          `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section)
-           RETURN d, s ORDER BY s.orderIndex`,
-          { docId: documentId }
-        );
-        if (docRows.length > 0) break;
-        await new Promise(r => setTimeout(r, 2000));
-      }
+      // 1. Read document + sections from Neo4j
+      const docRows = await read(
+        `MATCH (d:Document {id: $docId})-[:HAS_SECTION]->(s:Section)
+         RETURN d, s ORDER BY s.orderIndex`,
+        { docId: documentId }
+      );
 
       if (docRows.length === 0) {
         return NextResponse.json({ error: "Document not found. Please re-upload and try again." }, { status: 404 });
@@ -184,7 +179,7 @@ export async function POST(request: NextRequest) {
     // 5. Pass 2: Claude adaptation
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 8192,
+      max_tokens: 4096,
       system: ADAPTATION_SYSTEM_PROMPT(profile as AudienceProfile, format),
       messages: [
         {
