@@ -53,43 +53,26 @@ function RationaleSection({
   styleKey: keyof typeof SECTION_STYLES;
   defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
   const styles = SECTION_STYLES[styleKey];
 
   if (items.length === 0) return null;
 
   return (
     <div className={`rounded-xl border ${styles.border} overflow-hidden`}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-4 py-3 ${styles.bg} hover:opacity-80 transition-opacity`}
-      >
-        <span className="font-medium text-zinc-200">{title}</span>
-        <span className="flex items-center gap-2">
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${styles.badge}`}>
-            {items.length}
-          </span>
-          <svg
-            className={`w-4 h-4 text-zinc-400 transition-transform ${open ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+      <div className={`flex items-center justify-between px-4 py-3 ${styles.bg}`}>
+        <span className="font-semibold text-zinc-100 text-sm">{title}</span>
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${styles.badge}`}>
+          {items.length}
         </span>
-      </button>
-      {open && (
-        <ul className="px-4 py-3 space-y-2 bg-zinc-900/50">
-          {items.map((item, i) => (
-            <li key={i} className="text-sm text-zinc-300 flex gap-2">
-              <span className="text-zinc-600 select-none">&bull;</span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      </div>
+      <ul className="px-4 py-3 space-y-2 bg-zinc-900/30">
+        {items.map((item, i) => (
+          <li key={i} className="text-sm text-zinc-300 flex gap-2 leading-relaxed">
+            <span className={`mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full ${styles.badge.split(' ')[0]}`} />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -192,53 +175,53 @@ export default function ResultsView({
         </div>
       </div>
 
-      {/* Two-panel layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* LEFT: Adapted content (2/3 width on desktop) */}
-        <section className="lg:col-span-2">
-          <div className="glass-panel rounded-2xl p-6 sm:p-8">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-6">
-              Adapted Content
-            </h2>
-            <article className="prose prose-invert prose-zinc max-w-none prose-headings:text-zinc-100 prose-p:text-zinc-300 prose-strong:text-zinc-200 prose-li:text-zinc-300 prose-a:text-indigo-400">
-              <ReactMarkdown>{adaptedContent}</ReactMarkdown>
-            </article>
-          </div>
-        </section>
+      {/* Adapted content — full width, premium typography */}
+      <section className="mb-8">
+        <div className="glass-panel rounded-2xl p-8 sm:p-10">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-8">
+            Adapted Content
+          </h2>
+          <article className="prose prose-invert prose-lg max-w-none prose-headings:text-zinc-50 prose-headings:font-bold prose-headings:tracking-tight prose-p:text-zinc-300 prose-p:leading-relaxed prose-strong:text-zinc-100 prose-li:text-zinc-300 prose-li:leading-relaxed prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:text-indigo-300 prose-blockquote:border-indigo-500/30 prose-blockquote:text-zinc-400 prose-code:text-indigo-300 prose-code:bg-indigo-500/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-hr:border-white/[0.06]">
+            <ReactMarkdown>{adaptedContent}</ReactMarkdown>
+          </article>
+        </div>
+      </section>
 
-        {/* RIGHT: Rationale panel (1/3 width on desktop) */}
-        <aside className="lg:col-span-1">
-          <div className="glass-panel rounded-2xl p-6 sticky top-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-4">
-              Adaptation Rationale
-            </h2>
-            <div className="space-y-3">
-              <RationaleSection
-                title="Kept"
-                items={rationale.kept}
-                styleKey="kept"
-                defaultOpen
-              />
-              <RationaleSection
-                title="Simplified"
-                items={rationale.simplified}
-                styleKey="simplified"
-              />
-              <RationaleSection
-                title="Expanded"
-                items={rationale.expanded}
-                styleKey="expanded"
-              />
-              <RationaleSection
-                title="Cut"
-                items={rationale.cut}
-                styleKey="cut"
-              />
-              <TerminologySection changes={rationale.terminologyChanges} />
-            </div>
+      {/* Rationale — full width, horizontal grid of colored cards */}
+      <section>
+        <div className="glass-panel rounded-2xl p-8">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-indigo-400 mb-6">
+            Adaptation Rationale
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <RationaleSection
+              title="Kept"
+              items={rationale.kept}
+              styleKey="kept"
+              defaultOpen
+            />
+            <RationaleSection
+              title="Simplified"
+              items={rationale.simplified}
+              styleKey="simplified"
+              defaultOpen
+            />
+            <RationaleSection
+              title="Expanded"
+              items={rationale.expanded}
+              styleKey="expanded"
+              defaultOpen
+            />
+            <RationaleSection
+              title="Cut"
+              items={rationale.cut}
+              styleKey="cut"
+              defaultOpen
+            />
           </div>
-        </aside>
-      </div>
+          <TerminologySection changes={rationale.terminologyChanges} defaultOpen />
+        </div>
+      </section>
     </div>
   );
 }
