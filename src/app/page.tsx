@@ -26,6 +26,7 @@ interface AdaptResult {
     expanded: string[];
     cut: string[];
     terminologyChanges: { original: string; adapted: string; reason: string }[];
+    gaps?: string[];
   };
 }
 

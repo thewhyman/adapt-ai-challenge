@@ -40,6 +40,7 @@ interface AdaptSelectorProps {
       expanded: string[];
       cut: string[];
       terminologyChanges: { original: string; adapted: string; reason: string }[];
+      gaps?: string[];
     };
   }) => void;
   isLoading: boolean;
@@ -130,7 +131,7 @@ export default function AdaptSelector({
         audienceName: result.audienceName,
         formatName: result.formatName,
         adaptedContent: result.adaptedContent,
-        rationale: result.rationale,
+        rationale: { ...result.rationale, gaps: result.rationale.gaps || [] },
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Adaptation failed");
