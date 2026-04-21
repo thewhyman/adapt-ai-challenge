@@ -4,8 +4,10 @@ import { useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import AdaptSelector from "@/components/AdaptSelector";
 import ResultsView from "@/components/ResultsView";
+import CampaignGenerator from "@/components/CampaignGenerator";
 
 type Step = "upload" | "select" | "results";
+type Mode = "adapt" | "campaign";
 
 interface ExtractResult {
   documentId: string;
@@ -34,6 +36,7 @@ interface AdaptResult {
 }
 
 export default function Home() {
+  const [mode, setMode] = useState<Mode>("adapt");
   const [step, setStep] = useState<Step>("upload");
   const [isLoading, setIsLoading] = useState(false);
   const [extractResult, setExtractResult] = useState<ExtractResult | null>(null);
@@ -91,16 +94,50 @@ export default function Home() {
               Co-Dialectic Persona Engine
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-sm font-medium text-zinc-400">
-            <span>Ontology Extraction</span>
-            <span className="w-1 h-1 rounded-full bg-zinc-700"></span>
-            <span>Graph Adaptation</span>
+          {/* Mode tabs */}
+          <div className="flex gap-1 p-1 bg-zinc-900/80 rounded-xl border border-zinc-800">
+            <button
+              onClick={() => setMode("adapt")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === "adapt"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              Adapt Document
+            </button>
+            <button
+              onClick={() => setMode("campaign")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === "campaign"
+                  ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm shadow-indigo-500/25"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              ✦ Campaign Generator
+            </button>
           </div>
         </div>
       </header>
 
       <main className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
-        
+
+        {mode === "campaign" ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="mb-10 animate-fade-in">
+              <h2 className="text-3xl sm:text-4xl font-bold text-center tracking-tight text-zinc-50 mb-4">
+                Input anything. Get a campaign.
+              </h2>
+              <p className="text-center text-zinc-400 max-w-xl mx-auto text-base leading-relaxed">
+                Give xTeamOS your company website and a product URL. It learns your voice, your audience, and the platform rules — then outputs every asset and a full publishing plan.
+              </p>
+            </div>
+            <div className="glass-panel rounded-2xl p-8">
+              <CampaignGenerator />
+            </div>
+          </div>
+        ) : (
+          <>
         {step !== "results" && (
           <div className="mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-center tracking-tight text-zinc-50 mb-4 animate-fade-in">
@@ -205,6 +242,8 @@ export default function Home() {
             </div>
           )}
         </div>
+          </>
+        )}
       </main>
 
       <footer className="relative z-10 border-t border-white/[0.04] py-4 text-center">

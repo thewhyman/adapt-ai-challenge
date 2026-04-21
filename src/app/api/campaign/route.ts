@@ -406,5 +406,25 @@ ${(campaign.engagementRules || []).map((r: string) => `- ${r}`).join("\n")}
 ### Boost Triggers
 
 ${boostTriggers}
-`;
+${swarmReview ? `
+---
+
+## Swarm Quality Review
+
+> Reviewed by: **Codex** (structural/platform rules) + **Gemini** (marketing/domain expert)
+> Recommendation: **${swarmReview.recommendation}** | Duration: ${swarmReview.durationMs}ms
+
+### Codex: Platform Rule Check
+${swarmReview.codex.issues.length === 0
+  ? "✅ No issues found."
+  : swarmReview.codex.issues.map((i: any) => `- **[${i.severity}]** ${i.platform ? `(${i.platform}) ` : ""}${i.issue}${i.fix ? ` → *Fix: ${i.fix}*` : ""}`).join("\n")}
+
+### Gemini: Content Quality Scores
+
+| Dimension | Score |
+|---|---|
+${(swarmReview.gemini.dimensions || []).map((d: any) => `| ${d.dimension || d.section} | ${d.score}/10 |`).join("\n")}
+
+**Overall Score:** ${swarmReview.gemini.overallScore}/10
+` : ""}`;
 }
