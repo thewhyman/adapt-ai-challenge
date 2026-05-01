@@ -420,10 +420,12 @@ export default function ArchitectureDiagrams() {
       </div>
 
       {/* Diagram — inline SVG via dangerouslySetInnerHTML */}
-      <div className="rounded-xl overflow-hidden bg-transparent [&>div>svg]:w-full [&>div>svg]:h-auto">
+      <div className="rounded-xl overflow-hidden bg-transparent">
         <div
           key={active}
-          dangerouslySetInnerHTML={{ __html: current.svg }}
+          dangerouslySetInnerHTML={{
+            __html: current.svg.replace(/^<svg /, '<svg style="width:100%;height:auto;" '),
+          }}
           style={{ display: "block", lineHeight: 0 }}
         />
       </div>
