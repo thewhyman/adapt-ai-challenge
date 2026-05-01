@@ -26,6 +26,13 @@ interface CachedAdaptation {
   reliability: number;
 }
 
+interface DemoOrg {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+}
+
 interface DemoDoc {
   title: string;
   documentType: string;
@@ -34,6 +41,7 @@ interface DemoDoc {
   tag: string;
   tagColor: string;
   description: string;
+  organizations: DemoOrg[];
   adaptations: Record<string, CachedAdaptation>;
 }
 
@@ -46,6 +54,10 @@ const DEMO_DOCS: Record<string, DemoDoc> = {
     tag: "Defense Tech",
     tagColor: "indigo",
     description: "Autonomous deployment to air-gapped environments",
+    organizations: [
+      { id: "org-palantir", name: "Palantir Technologies", type: "company", description: "Enterprise data intelligence platform. Apollo enables AI model deployment to air-gapped and edge environments." },
+      { id: "org-ai-fund", name: "AI Fund", description: "Andrew Ng venture studio building AI-native companies.", type: "company" },
+    ],
     adaptations: {
       "aud-steve-jony": {
         adaptedContent: "## Why Apollo Matters\n\nPalantir solved a problem nobody else would touch: **how do you push software updates to places with no internet?**\n\nThink military bases in remote locations, oil rigs, classified government facilities — environments where \"just deploy to the cloud\" is laughable.\n\n### The Core Insight\n\nMost deployment systems assume connectivity. Apollo assumes the opposite. It packages everything — code, dependencies, configuration — into a self-contained unit that can evaluate its own environment, decide if it's safe to deploy, and roll back autonomously if something breaks.\n\nNo human in the loop. No phone-home to a central server. The software makes the call.\n\n### What Makes This Different\n\n**Autonomous decision-making at the edge.** The control plane doesn't just push updates — it reasons about constraints. If the math doesn't work, it doesn't deploy. If it deploys and something breaks, it reverses itself.\n\n**This is the future of all software deployment**, not just defense. Every enterprise with distributed operations faces the same problem.\n\n### The Bottom Line\n\nApollo turns deployment from a prayer into a guarantee.",
@@ -73,6 +85,10 @@ const DEMO_DOCS: Record<string, DemoDoc> = {
     tag: "Manufacturing AI",
     tagColor: "orange",
     description: "Computer vision defect detection for PCB assembly lines",
+    organizations: [
+      { id: "org-landing-ai", name: "Landing AI", type: "company", description: "Computer vision platform for manufacturing quality inspection. Portfolio company of the AI Fund." },
+      { id: "org-ai-fund", name: "AI Fund", type: "company", description: "Andrew Ng venture studio building AI-native companies." },
+    ],
     adaptations: {
       "aud-steve-jony": {
         adaptedContent: "## Every Defective Product That Reaches a Customer Is a Broken Promise\n\nLanding AI's visual inspection system looked at 2.4 million circuit boards last quarter. It found defects that human inspectors missed — **not sometimes, but consistently.** 847 defective units caught before shipping. Zero false shipments in the final month.\n\n### Why This Matters\n\nA defective PCB in a medical device isn't a warranty claim. It's a patient at risk. A defective PCB in an automotive module isn't a recall — it's a family on a highway. Quality inspection isn't a manufacturing problem. It's a human safety problem.\n\n### What Changed\n\nThe old process: human inspectors examining boards under magnification, 8 hours a day, catching 92% of defects. The 8% they missed? That's 192,000 defective units per year at this production volume.\n\nThe new process: AI sees every board, every angle, every time. **99.7% detection rate.** The humans now review only the edge cases the AI flags — the ambiguous 3% where human judgment actually matters.\n\n### The Insight\n\nThis isn't AI replacing humans. It's AI handling the repetitive visual grind so humans can focus on the judgment calls that require experience and intuition. The inspector's job got more interesting, not eliminated.",
@@ -115,6 +131,10 @@ const DEMO_DOCS: Record<string, DemoDoc> = {
     tag: "Trade Compliance",
     tagColor: "cyan",
     description: "AI-driven tariff compliance for US importers",
+    organizations: [
+      { id: "org-gaia-dynamics", name: "Gaia Dynamics", type: "company", description: "AI-powered trade compliance platform automating tariff analysis, HTS classification, and regulatory risk for US importers." },
+      { id: "org-ai-fund", name: "AI Fund", type: "company", description: "Andrew Ng venture studio building AI-native companies." },
+    ],
     adaptations: {
       "aud-steve-jony": {
         adaptedContent: "## Your Supply Chain Just Got More Expensive. Here's What To Do About It.\n\nNew US-China tariffs took effect March 2026. If your company imports electronics, semiconductors, or rare earth components, your costs just went up 15-25%.\n\nThis isn't a policy brief. It's a decision document.\n\n### Three Things You Need to Know\n\n**1. Which products are hit.** Consumer electronics components (HTS 8542): duty rate increased from 25% to 40%. Semiconductor manufacturing equipment (HTS 8486): new 15% duty where there was none. Rare earth magnets (HTS 8505): 30% duty, up from 10%.\n\n**2. The exemption window is closing.** There's a 90-day exclusion request window ending June 28, 2026. If your product qualifies (≤$5M annual import value, no domestic alternative), file NOW. After June 28, the full rate applies retroactively.\n\n**3. The real cost isn't the tariff.** It's the compliance overhead. Every shipment now requires country-of-origin verification, component-level tariff classification, and end-use documentation. Companies that automate this survive. Companies that do it manually drown in paperwork and penalties.\n\n### The Bottom Line\n\nFile your exclusion requests before June 28. Automate your classification pipeline. And start qualifying alternative suppliers in Vietnam and India — not because the tariffs will disappear, but because supply chain diversification is the only hedge that works regardless of policy.",
@@ -157,6 +177,9 @@ const DEMO_DOCS: Record<string, DemoDoc> = {
     tag: "Healthcare AI",
     tagColor: "emerald",
     description: "AI-accelerated drug discovery for mental health",
+    organizations: [
+      { id: "org-ai-fund", name: "AI Fund", type: "company", description: "Andrew Ng venture studio building AI-native companies across healthcare, manufacturing, and enterprise verticals." },
+    ],
     adaptations: {
       "aud-steve-jony": {
         adaptedContent: "## 47 Million Americans Tried Every Antidepressant. Nothing Worked. Until Now.\n\nTreatment-resistant depression affects 30% of people with major depression. That's 47 million Americans who tried medication after medication — SSRIs, SNRIs, tricyclics, MAOIs — and none of them worked. They didn't fail to take their medicine. The medicine failed them.\n\n### What Changed\n\nAI analyzed 2.3 million molecular structures and identified a compound — AX-7 — that works through a mechanism no human researcher had considered. It targets the glutamate system instead of serotonin, which is what every antidepressant since Prozac has targeted.\n\nThe Phase I trial showed something remarkable: **68% of patients who had failed 3+ prior medications responded to AX-7 within 6 weeks.** Not a modest improvement. A transformation.\n\n### What Happens Next\n\nPhase II starts Q3 2026 with 340 patients across 12 sites. The primary question: does the Phase I signal hold at scale? Secondary questions: optimal dosing, duration of effect, safety in older adults.\n\n### Why This Matters Beyond Depression\n\nIf AI can find what human researchers missed in the most-studied therapeutic area in psychiatry, it can find treatments for diseases where we're not even looking in the right direction. AX-7 isn't just a drug. It's proof that AI-driven drug discovery finds what humans can't — because it has no assumptions about where to look.",
@@ -214,4 +237,8 @@ export function getAllDemoDocs(): { id: string; doc: DemoDoc }[] {
 
 export function isDemoDoc(documentId: string): boolean {
   return documentId in DEMO_DOCS;
+}
+
+export function getDemoOrganizations(documentId: string): DemoOrg[] {
+  return DEMO_DOCS[documentId]?.organizations ?? [];
 }
