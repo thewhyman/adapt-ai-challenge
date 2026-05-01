@@ -383,15 +383,74 @@ const SVG_D4 = `<svg width="1200" height="680" viewBox="0 0 1200 680" xmlns="htt
   <text x="600" y="640" fill="#4b5563" font-size="9" letter-spacing="2" text-anchor="middle">DISTRIBUTION ENGINE · ADAPT AI · Step 3 of 3</text>
 </svg>`;
 
-const TABS = [
-  { id: "overview",      label: "System Overview",       accent: "#f97316", svg: SVG_D1 },
-  { id: "ingestion",     label: "1 · Ingestion",         accent: "#f97316", svg: SVG_D2 },
-  { id: "extraction",   label: "2 · Extraction",         accent: "#7c3aed", svg: SVG_D3 },
-  { id: "distribution", label: "3 · Distribution",       accent: "#14b8a6", svg: SVG_D4 },
+const FORMULAS = [
+  {
+    step: "1. Extract Once",
+    equation: "Document → Claude → KnowledgeGraph",
+    description: "Read the document once. Store its structure forever. Never touch the raw text again.",
+    accent: "#f97316",
+  },
+  {
+    step: "2. Model Your Audience",
+    equation: "AudienceType → AudienceProfile Node",
+    description: "Define who reads it — once. Reuse across every document you ever upload.",
+    accent: "#7c3aed",
+  },
+  {
+    step: "3. Traverse, Don't Translate",
+    equation: "KnowledgeGraph × AudienceProfile × OutputFormat → AdaptedDocument",
+    description: "Filter the graph by what this audience can access. Pass only those nodes to Claude. Write from structure, not from memory.",
+    accent: "#14b8a6",
+  },
 ];
 
+const SOUNDBITE = `"Extract once. Model your audience once. Traverse the graph to produce the output. Three steps — none of them are 'paste the document into ChatGPT and hope.'"`;
+
+const TABS = [
+  { id: "exec",         label: "Product Overview",      accent: "#5b8fff", svg: null,   formula: null },
+  { id: "overview",    label: "System Overview",        accent: "#f97316", svg: SVG_D1, formula: null },
+  { id: "ingestion",   label: "1 · Ingestion",          accent: "#f97316", svg: SVG_D2, formula: FORMULAS[0] },
+  { id: "extraction",  label: "2 · Extraction",         accent: "#7c3aed", svg: SVG_D3, formula: FORMULAS[1] },
+  { id: "distribution",label: "3 · Distribution",       accent: "#14b8a6", svg: SVG_D4, formula: FORMULAS[2] },
+];
+
+function FormulaCard({ formula, large = false }: { formula: typeof FORMULAS[0]; large?: boolean }) {
+  return (
+    <div className={`rounded-xl border bg-zinc-900/60 p-5 ${large ? "p-6" : ""}`}
+         style={{ borderColor: formula.accent + "40" }}>
+      <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: formula.accent }}>
+        {formula.step}
+      </p>
+      <p className="font-mono text-sm font-bold text-zinc-100 mb-2 leading-snug" style={{ color: formula.accent }}>
+        {formula.equation}
+      </p>
+      <p className="text-zinc-400 text-sm leading-relaxed">{formula.description}</p>
+    </div>
+  );
+}
+
+function ProductOverview() {
+  return (
+    <div className="space-y-4 animate-fade-in">
+      <div className="grid gap-4 md:grid-cols-3">
+        {FORMULAS.map((f) => <FormulaCard key={f.step} formula={f} large />)}
+      </div>
+      <div className="rounded-xl border border-zinc-700 bg-zinc-900/40 p-6 text-center">
+        <p className="text-zinc-300 text-base italic leading-relaxed max-w-3xl mx-auto">{SOUNDBITE}</p>
+      </div>
+    </div>
+  );
+}
+
+function makeSvgResponsive(svg: string) {
+  return svg
+    .replace(/^<svg /, '<svg style="width:100%;height:auto;" ')
+    .replace(/ width="\d+(\.\d+)?"/, "")
+    .replace(/ height="\d+(\.\d+)?"/, "");
+}
+
 export default function ArchitectureDiagrams() {
-  const [active, setActive] = useState("overview");
+  const [active, setActive] = useState("exec");
   const current = TABS.find((t) => t.id === active)!;
 
   return (
@@ -419,19 +478,27 @@ export default function ArchitectureDiagrams() {
         ))}
       </div>
 
-      {/* Diagram — inline SVG via dangerouslySetInnerHTML */}
-      <div className="rounded-xl overflow-hidden bg-transparent">
-        <div
-          key={active}
-          dangerouslySetInnerHTML={{
-            __html: current.svg
-              .replace(/^<svg /, '<svg style="width:100%;height:auto;" ')
-              .replace(/ width="\d+(\.\d+)?"/, "")
-              .replace(/ height="\d+(\.\d+)?"/, ""),
-          }}
-          style={{ display: "block", lineHeight: 0 }}
-        />
-      </div>
+      {/* Product Overview — exec one-pager */}
+      {active === "exec" && <ProductOverview />}
+
+      {/* Diagram tabs */}
+      {active !== "exec" && current.svg && (
+        <div key={active} className="animate-fade-in">
+          {/* Formula banner above diagram */}
+          {current.formula && (
+            <div className="mb-4">
+              <FormulaCard formula={current.formula} />
+            </div>
+          )}
+          {/* SVG diagram */}
+          <div className="rounded-xl overflow-hidden bg-transparent">
+            <div
+              dangerouslySetInnerHTML={{ __html: makeSvgResponsive(current.svg) }}
+              style={{ display: "block", lineHeight: 0 }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
