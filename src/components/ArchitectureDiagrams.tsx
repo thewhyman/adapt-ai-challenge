@@ -47,9 +47,7 @@ const SVG_D1 = `<svg width="1100" height="420" viewBox="0 0 1100 420" xmlns="htt
 <line x1="80" y1="284" x2="310" y2="284" stroke="#1f2937" stroke-width="1"/>
 <text x="195" y="306" text-anchor="middle" fill="#6b7280" font-family="-apple-system,sans-serif" font-size="10">normalize · chunk · deduplicate</text>
 <text x="195" y="322" text-anchor="middle" fill="#6b7280" font-family="-apple-system,sans-serif" font-size="10">version-track · index</text>
-<line x1="340" y1="215" x2="390" y2="215" stroke="#4b5563" stroke-width="2" marker-end="url(#arr-main)"/>
-<text x="365" y="207" text-anchor="middle" fill="#6b7280" font-family="-apple-system,sans-serif" font-size="9">structured</text>
-<text x="365" y="225" text-anchor="middle" fill="#6b7280" font-family="-apple-system,sans-serif" font-size="9">knowledge</text>
+<line x1="340" y1="215" x2="390" y2="215" stroke="#4b5563" stroke-width="2.5" marker-end="url(#arr-main)"/>
 <rect x="390" y="95" width="320" height="240" rx="18" fill="#0f0f0f" stroke="#7c3aed" stroke-width="2" filter="url(#glow-purple)"/>
 <rect x="390" y="95" width="320" height="6" rx="3" fill="#7c3aed"/>
 <text x="550" y="138" text-anchor="middle" fill="#a78bfa" font-family="-apple-system,sans-serif" font-size="14" font-weight="700" letter-spacing="2">EXTRACTION ENGINE</text>
@@ -73,9 +71,7 @@ const SVG_D1 = `<svg width="1100" height="420" viewBox="0 0 1100 420" xmlns="htt
 <line x1="539" y1="228" x2="504" y2="214" stroke="#4c1d95" stroke-width="1"/>
 <rect x="410" y="336" width="280" height="20" rx="5" fill="#1e0050" stroke="#7c3aed" stroke-width="1"/>
 <text x="550" y="350" text-anchor="middle" fill="#8b5cf6" font-family="-apple-system,sans-serif" font-size="9" font-weight="700" letter-spacing="1">LEARN ONCE · PUBLISH FOREVER</text>
-<line x1="710" y1="215" x2="760" y2="215" stroke="#4b5563" stroke-width="2" marker-end="url(#arr-main)"/>
-<text x="735" y="207" text-anchor="middle" fill="#6b7280" font-family="-apple-system,sans-serif" font-size="9">targeted</text>
-<text x="735" y="225" text-anchor="middle" fill="#6b7280" font-family="-apple-system,sans-serif" font-size="9">content</text>
+<line x1="710" y1="215" x2="760" y2="215" stroke="#4b5563" stroke-width="2.5" marker-end="url(#arr-main)"/>
 <rect x="760" y="95" width="290" height="240" rx="18" fill="#0f0f0f" stroke="#14b8a6" stroke-width="2" filter="url(#glow-teal)"/>
 <rect x="760" y="95" width="290" height="6" rx="3" fill="#14b8a6"/>
 <text x="905" y="138" text-anchor="middle" fill="#5eead4" font-family="-apple-system,sans-serif" font-size="14" font-weight="700" letter-spacing="2">DISTRIBUTION ENGINE</text>
@@ -227,7 +223,7 @@ const SVG_D3 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" w
   <line x1="620" y1="175" x2="620" y2="140" stroke="#4c1d95" stroke-width="1.5" opacity="0.8"/>
   <line x1="754" y1="253" x2="785" y2="235" stroke="#4c1d95" stroke-width="1.5" opacity="0.8"/>
   <line x1="754" y1="407" x2="785" y2="425" stroke="#4c1d95" stroke-width="1.5" opacity="0.8"/>
-  <line x1="620" y1="485" x2="620" y2="520" stroke="#4c1d95" stroke-width="1.5" opacity="0.8"/>
+  <line x1="620" y1="485" x2="620" y2="500" stroke="#4c1d95" stroke-width="1.5" opacity="0.8"/>
   <line x1="486" y1="407" x2="455" y2="425" stroke="#4c1d95" stroke-width="1.5" opacity="0.8"/>
   <line x1="486" y1="253" x2="455" y2="235" stroke="#4c1d95" stroke-width="1.5" opacity="0.8"/>
   <g filter="url(#d3-kgGlow)">
@@ -254,10 +250,10 @@ const SVG_D3 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" w
   <text x="819" y="443" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Relationships</text>
   <text x="819" y="459" text-anchor="middle" fill="#a78bfa" font-size="9">how ideas connect</text>
   <g filter="url(#d3-satGlow)">
-    <circle cx="620" cy="560" r="40" fill="#1a0a2e" stroke="#7c3aed" stroke-width="2"/>
+    <circle cx="620" cy="540" r="40" fill="#1a0a2e" stroke="#7c3aed" stroke-width="2"/>
   </g>
-  <text x="620" y="558" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Depth Score</text>
-  <text x="620" y="574" text-anchor="middle" fill="#a78bfa" font-size="9">exec → technical</text>
+  <text x="620" y="538" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">Depth Score</text>
+  <text x="620" y="554" text-anchor="middle" fill="#a78bfa" font-size="9">exec → technical</text>
   <g filter="url(#d3-satGlow)">
     <circle cx="421" cy="445" r="40" fill="#1a0a2e" stroke="#7c3aed" stroke-width="2"/>
   </g>
@@ -387,24 +383,24 @@ const FORMULAS = [
   {
     step: "1. Extract Once",
     equation: "Document → Claude → KnowledgeGraph",
-    description: "Read the document once. Store its structure forever. Never touch the raw text again.",
+    description: "Ingest a document once — the knowledge lives forever, the re-reading never happens.",
     accent: "#f97316",
   },
   {
     step: "2. Model Your Audience",
     equation: "AudienceType → AudienceProfile Node",
-    description: "Define who reads it — once. Reuse across every document you ever upload.",
+    description: "Describe your audience once; every future document already knows who it's talking to.",
     accent: "#7c3aed",
   },
   {
     step: "3. Traverse, Don't Translate",
     equation: "KnowledgeGraph × AudienceProfile × OutputFormat → AdaptedDocument",
-    description: "Filter the graph by what this audience can access. Pass only those nodes to Claude. Write from structure, not from memory.",
+    description: "The graph filters, Claude writes — no copy-pasting, no context loss, no hoping.",
     accent: "#14b8a6",
   },
 ];
 
-const SOUNDBITE = `"Extract once. Model your audience once. Traverse the graph to produce the output. Three steps — none of them are 'paste the document into ChatGPT and hope.'"`;
+const SOUNDBITE = `"Three steps: extract, model, traverse. Your competitors are still pasting documents into ChatGPT and praying."`;
 
 const TABS = [
   { id: "exec",         label: "Product Overview",      accent: "#5b8fff", svg: null,   formula: null },
@@ -416,15 +412,20 @@ const TABS = [
 
 function FormulaCard({ formula, large = false }: { formula: typeof FORMULAS[0]; large?: boolean }) {
   return (
-    <div className={`rounded-xl border bg-zinc-900/60 p-5 ${large ? "p-6" : ""}`}
-         style={{ borderColor: formula.accent + "40" }}>
-      <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: formula.accent }}>
-        {formula.step}
-      </p>
-      <p className="font-mono text-sm font-bold text-zinc-100 mb-2 leading-snug" style={{ color: formula.accent }}>
-        {formula.equation}
-      </p>
-      <p className="text-zinc-400 text-sm leading-relaxed">{formula.description}</p>
+    <div
+      className="rounded-xl p-[1px] shadow-lg"
+      style={{ background: `linear-gradient(135deg, ${formula.accent}50, ${formula.accent}10)` }}
+    >
+      <div className={`rounded-xl bg-zinc-950 h-full ${large ? "p-6" : "p-5"}`}>
+        <p className="text-xs font-black tracking-[0.2em] uppercase mb-3" style={{ color: formula.accent }}>
+          {formula.step}
+        </p>
+        <p className="font-mono text-lg font-black leading-tight mb-3" style={{ color: formula.accent }}>
+          {formula.equation}
+        </p>
+        <div className="h-px w-8 mb-3 rounded-full" style={{ backgroundColor: formula.accent, opacity: 0.5 }} />
+        <p className="text-zinc-300 text-sm leading-relaxed font-medium">{formula.description}</p>
+      </div>
     </div>
   );
 }
