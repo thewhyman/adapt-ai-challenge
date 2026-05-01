@@ -134,7 +134,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
+      <main className={`relative mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10 ${mode === "architecture" ? "max-w-7xl" : "max-w-5xl"}`}>
 
         {mode === "architecture" ? (
           <ArchitectureDiagrams />
