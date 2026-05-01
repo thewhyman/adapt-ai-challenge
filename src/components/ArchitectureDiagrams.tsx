@@ -424,7 +424,10 @@ export default function ArchitectureDiagrams() {
         <div
           key={active}
           dangerouslySetInnerHTML={{
-            __html: current.svg.replace(/^<svg /, '<svg style="width:100%;height:auto;" '),
+            __html: current.svg
+              .replace(/^<svg /, '<svg style="width:100%;height:auto;" ')
+              .replace(/ width="\d+(\.\d+)?"/, "")
+              .replace(/ height="\d+(\.\d+)?"/, ""),
           }}
           style={{ display: "block", lineHeight: 0 }}
         />
