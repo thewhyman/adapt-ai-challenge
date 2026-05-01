@@ -25,6 +25,13 @@ interface ExtractedConcept {
   relatedConcepts: string[];
 }
 
+interface ExtractedOrganization {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+}
+
 interface ExtractionResult {
   title: string;
   documentType: string;
@@ -32,6 +39,7 @@ interface ExtractionResult {
   audienceAssumptions: string[];
   sections: ExtractedSection[];
   concepts: ExtractedConcept[];
+  organizations?: ExtractedOrganization[];
 }
 
 export const maxDuration = 60;
@@ -243,12 +251,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 7. Create Organization nodes and link to document + concepts
+    const orgs = extracted.organizations ?? [];
+    if (orgs.length > 0) {
+      await write(
+        `MATCH (d:Document {id: $docId})
+         UNWIND $orgs AS org
+         MERGE (o:Organization {id: org.id})
+         SET o.name = org.name, o.type = org.type, o.description = org.description
+         MERGE (d)-[:PUBLISHED_BY]->(o)`,
+        {
+          docId,
+          orgs: orgs.map((o) => ({
+            id: `${docId}-${o.id}`,
+            name: o.name,
+            type: o.type,
+            description: o.description,
+          })),
+        }
+      );
+
+      // Link extracted concepts to their orgs
+      const conceptOrgLinks: { conceptId: string; orgId: string }[] = [];
+      for (const section of extracted.sections) {
+        for (const conceptId of section.mentionsConcepts) {
+          for (const org of orgs) {
+            conceptOrgLinks.push({
+              conceptId: `${docId}-${conceptId}`,
+              orgId: `${docId}-${org.id}`,
+            });
+          }
+        }
+      }
+      if (conceptOrgLinks.length > 0) {
+        write(
+          `UNWIND $links AS link
+           MATCH (c:Concept {id: link.conceptId})
+           MATCH (o:Organization {id: link.orgId})
+           MERGE (c)-[:ASSOCIATED_WITH]->(o)`,
+          { links: conceptOrgLinks }
+        );
+      }
+    }
+
     return NextResponse.json({
       documentId: docId,
       title: extracted.title,
       documentType: extracted.documentType,
       sectionCount: extracted.sections.length,
       conceptCount: extracted.concepts.length,
+      organizationCount: orgs.length,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
