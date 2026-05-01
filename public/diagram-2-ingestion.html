@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Adapt AI — Ingestion Engine</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0c;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+  svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<svg viewBox="0 0 1200 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ingestion Engine diagram for Adapt AI">
+  <defs>
+    <!-- Orange dashed arrow (sources -> collector) -->
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f97316"/>
+    </marker>
+    <!-- Blue solid arrow (collector -> claude) -->
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3b82f6"/>
+    </marker>
+    <!-- Purple solid arrow (claude -> KG) -->
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/>
+    </marker>
+
+    <!-- Glow filters -->
+    <filter id="glowClaude" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowKG" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Knowledge Graph radial gradient -->
+    <radialGradient id="kgGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3b0dab"/>
+      <stop offset="60%" stop-color="#1e0a5e"/>
+      <stop offset="100%" stop-color="#0f0820"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background panel -->
+  <rect x="0.75" y="0.75" width="1198.5" height="558.5" fill="#111113" stroke="#f97316" stroke-width="1.5" rx="6"/>
+
+  <!-- Top color bar -->
+  <rect x="0" y="0" width="1200" height="5" fill="#f97316"/>
+
+  <!-- Title -->
+  <text x="600" y="34" text-anchor="middle" fill="#f97316" font-size="14" font-weight="700" letter-spacing="3" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">INGESTION ENGINE</text>
+  <text x="600" y="54" text-anchor="middle" fill="#9ca3af" font-size="10" letter-spacing="2" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">ANY SOURCE  ·  CONTINUOUSLY GROWING  ·  KNOWLEDGE BASE GROWS WITH EVERY DOCUMENT</text>
+
+  <!-- ===================== 5 Source boxes ===================== -->
+  <!-- Box 1: Company Website (y=100) -->
+  <g>
+    <rect x="40" y="100" width="190" height="58" rx="12" fill="#1c1008" stroke="#f97316" stroke-width="2"/>
+    <text x="135" y="125" text-anchor="middle" fill="#fed7aa" font-size="13" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Company Website</text>
+    <text x="135" y="143" text-anchor="middle" fill="#fb923c" font-size="10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">crawl · index</text>
+  </g>
+  <!-- Box 2: Docs & PDFs (y=185) -->
+  <g>
+    <rect x="40" y="185" width="190" height="58" rx="12" fill="#1c1008" stroke="#f97316" stroke-width="2"/>
+    <text x="135" y="210" text-anchor="middle" fill="#fed7aa" font-size="13" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Docs &amp; PDFs</text>
+    <text x="135" y="228" text-anchor="middle" fill="#fb923c" font-size="10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Word · MD · Notion</text>
+  </g>
+  <!-- Box 3: Slack / Teams (y=270) -->
+  <g>
+    <rect x="40" y="270" width="190" height="58" rx="12" fill="#1c1008" stroke="#f97316" stroke-width="2"/>
+    <text x="135" y="295" text-anchor="middle" fill="#fed7aa" font-size="13" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Slack / Teams</text>
+    <text x="135" y="313" text-anchor="middle" fill="#fb923c" font-size="10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">internal comms</text>
+  </g>
+  <!-- Box 4: Internal Wiki (y=355) -->
+  <g>
+    <rect x="40" y="355" width="190" height="58" rx="12" fill="#1c1008" stroke="#f97316" stroke-width="2"/>
+    <text x="135" y="380" text-anchor="middle" fill="#fed7aa" font-size="13" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Internal Wiki</text>
+    <text x="135" y="398" text-anchor="middle" fill="#fb923c" font-size="10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Confluence · GitBook</text>
+  </g>
+  <!-- Box 5: API Feeds (y=440) -->
+  <g>
+    <rect x="40" y="440" width="190" height="58" rx="12" fill="#1c1008" stroke="#f97316" stroke-width="2"/>
+    <text x="135" y="465" text-anchor="middle" fill="#fed7aa" font-size="13" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">API Feeds</text>
+    <text x="135" y="483" text-anchor="middle" fill="#fb923c" font-size="10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">CRM · product data</text>
+  </g>
+
+  <!-- ===================== Dashed orange arrows: sources -> collector ===================== -->
+  <!-- Fan into Collector left edge distributed across height -->
+  <line x1="230" y1="129" x2="270" y2="215" stroke="#f97316" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arrowOrange)"/>
+  <line x1="230" y1="214" x2="270" y2="238" stroke="#f97316" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arrowOrange)"/>
+  <line x1="230" y1="299" x2="270" y2="270" stroke="#f97316" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arrowOrange)"/>
+  <line x1="230" y1="384" x2="270" y2="302" stroke="#f97316" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arrowOrange)"/>
+  <line x1="230" y1="469" x2="270" y2="325" stroke="#f97316" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#arrowOrange)"/>
+
+  <!-- ===================== Collector box ===================== -->
+  <g>
+    <rect x="270" y="190" width="210" height="160" rx="14" fill="#0c1a2e" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="375" y="225" text-anchor="middle" fill="#93c5fd" font-size="13" font-weight="700" letter-spacing="2" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">COLLECTOR</text>
+    <line x1="305" y1="240" x2="445" y2="240" stroke="#1d4ed8" stroke-width="1" opacity="0.5"/>
+    <text x="375" y="270" text-anchor="middle" fill="#6b7280" font-size="10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">normalize format</text>
+    <text x="375" y="293" text-anchor="middle" fill="#6b7280" font-size="10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">chunk · clean · tag</text>
+    <text x="375" y="316" text-anchor="middle" fill="#6b7280" font-size="10" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">deduplicate · version-track</text>
+  </g>
+
+  <!-- ===================== Arrow: Collector -> Claude (blue solid) ===================== -->
+  <line x1="480" y1="270" x2="546" y2="270" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+
+  <!-- ===================== Claude circle ===================== -->
+  <g filter="url(#glowClaude)">
+    <circle cx="620" cy="270" r="70" fill="#0f0f11" stroke="#6366f1" stroke-width="3"/>
+  </g>
+  <text x="620" y="278" text-anchor="middle" fill="#818cf8" font-size="16" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">LLM Engine</text>
+
+  <!-- ===================== Arrow: Claude -> Knowledge Graph (purple solid) ===================== -->
+  <line x1="690" y1="270" x2="811" y2="270" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowPurple)"/>
+
+  <!-- ===================== Knowledge Graph circle (THE BIG ONE) ===================== -->
+  <!-- Outer decorative ring -->
+  <circle cx="960" cy="270" r="156" fill="none" stroke="#4c1d95" stroke-width="1.5" opacity="0.3"/>
+  <!-- Inner glowing circle -->
+  <g filter="url(#glowKG)">
+    <circle cx="960" cy="270" r="145" fill="url(#kgGradient)" stroke="#7c3aed" stroke-width="3"/>
+  </g>
+  <!-- Labels inside KG -->
+  <text x="960" y="255" text-anchor="middle" fill="#c4b5fd" font-size="18" font-weight="700" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Knowledge Graph</text>
+  <text x="960" y="280" text-anchor="middle" fill="#8b5cf6" font-size="11" letter-spacing="1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Company Knowledge Base</text>
+  <text x="960" y="300" text-anchor="middle" fill="#8b5cf6" font-size="9" font-style="italic" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">permanent · queryable · audience-agnostic</text>
+  <text x="960" y="330" text-anchor="middle" fill="#4b5563" font-size="9" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">← grows with every document</text>
+
+  <!-- ===================== Bottom strip ===================== -->
+  <text x="600" y="540" text-anchor="middle" fill="#6b7280" font-size="10" letter-spacing="3" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">STEP 1 OF 3  ·  INGESTION ENGINE  ·  ADAPT AI</text>
+</svg>
+</div>
+</body>
+</html>
