@@ -7,7 +7,7 @@ import ResultsView from "@/components/ResultsView";
 import CampaignGenerator from "@/components/CampaignGenerator";
 
 type Step = "upload" | "select" | "results";
-type Mode = "adapt" | "campaign";
+type Mode = "adapt" | "campaign" | "architecture";
 
 interface ExtractResult {
   documentId: string;
@@ -116,13 +116,130 @@ export default function Home() {
             >
               ✦ Campaign Generator
             </button>
+            <button
+              onClick={() => setMode("architecture")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                mode === "architecture"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              How It Works
+            </button>
           </div>
         </div>
       </header>
 
       <main className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
 
-        {mode === "campaign" ? (
+        {mode === "architecture" ? (
+          <div className="animate-fade-in">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold text-zinc-50 mb-2">How It Works</h2>
+              <p className="text-zinc-400 text-base">Three decoupled phases. Extract once. Adapt infinitely.</p>
+            </div>
+            <div className="glass-panel rounded-2xl p-6 overflow-x-auto">
+              <svg width="1050" height="720" viewBox="0 0 1100 720" xmlns="http://www.w3.org/2000/svg" style={{minWidth: '800px'}}>
+                <defs>
+                  <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4b5563"/></marker>
+                  <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/></marker>
+                  <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#8b5cf6"/></marker>
+                  <marker id="arr-green" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#22c55e"/></marker>
+                </defs>
+                {/* Phase 1 - System Setup */}
+                <rect x="0" y="0" width="1100" height="192" fill="#0e0b1e" rx="12"/>
+                <text x="30" y="22" fill="#8b5cf6" fontFamily="-apple-system,sans-serif" fontSize="11" fontWeight="700" letterSpacing="2">SYSTEM SETUP — ONCE PER COMPANY · REUSED ACROSS EVERY DOCUMENT</text>
+                <rect x="30" y="32" width="140" height="68" rx="10" fill="#160f2b" stroke="#6d28d9" strokeWidth="1.5"/>
+                <text x="100" y="59" textAnchor="middle" fill="#c4b5fd" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Name</text>
+                <text x="100" y="77" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="11">Executive · Eli Chen</text>
+                <text x="100" y="92" textAnchor="middle" fill="#4b5563" fontFamily="-apple-system,sans-serif" fontSize="10">role or real person</text>
+                <rect x="180" y="32" width="170" height="68" rx="10" fill="#160f2b" stroke="#6d28d9" strokeWidth="1.5"/>
+                <text x="265" y="59" textAnchor="middle" fill="#c4b5fd" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">ComplexityThreshold</text>
+                <text x="265" y="77" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="11">1–5 score</text>
+                <text x="265" y="92" textAnchor="middle" fill="#4b5563" fontFamily="-apple-system,sans-serif" fontSize="10">Exec ≤2 · Tech IC ≥3</text>
+                <rect x="360" y="32" width="170" height="68" rx="10" fill="#160f2b" stroke="#6d28d9" strokeWidth="1.5"/>
+                <text x="445" y="59" textAnchor="middle" fill="#c4b5fd" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">DomainAssumptions</text>
+                <text x="445" y="77" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="11">what they already know</text>
+                <text x="445" y="92" textAnchor="middle" fill="#4b5563" fontFamily="-apple-system,sans-serif" fontSize="10">skip basics · go deeper</text>
+                <line x1="531" y1="66" x2="567" y2="66" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#arr-purple)"/>
+                <rect x="569" y="22" width="215" height="88" rx="12" fill="#1e0f40" stroke="#7c3aed" strokeWidth="2"/>
+                <text x="676" y="52" textAnchor="middle" fill="#c4b5fd" fontFamily="-apple-system,sans-serif" fontSize="15" fontWeight="700">AudienceProfile</text>
+                <text x="676" y="72" textAnchor="middle" fill="#a78bfa" fontFamily="-apple-system,sans-serif" fontSize="11">Node in Neo4j · Persistent</text>
+                <text x="676" y="90" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="10">Reusable across every document</text>
+                <rect x="30" y="118" width="140" height="60" rx="10" fill="#0d1f17" stroke="#065f46" strokeWidth="1.5"/>
+                <text x="100" y="143" textAnchor="middle" fill="#6ee7b7" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Format</text>
+                <text x="100" y="162" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="10">Brief · Spec · One-Pager</text>
+                <rect x="180" y="118" width="170" height="60" rx="10" fill="#0d1f17" stroke="#065f46" strokeWidth="1.5"/>
+                <text x="265" y="143" textAnchor="middle" fill="#6ee7b7" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Voice</text>
+                <text x="265" y="162" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="10">Formal · Technical · Sales</text>
+                <rect x="360" y="118" width="170" height="60" rx="10" fill="#0d1f17" stroke="#065f46" strokeWidth="1.5"/>
+                <text x="445" y="143" textAnchor="middle" fill="#6ee7b7" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Length</text>
+                <text x="445" y="162" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="10">1-page · deep-dive · summary</text>
+                <line x1="531" y1="148" x2="567" y2="148" stroke="#22c55e" strokeWidth="1.5" markerEnd="url(#arr-green)"/>
+                <rect x="569" y="110" width="215" height="80" rx="12" fill="#0d2010" stroke="#16a34a" strokeWidth="2"/>
+                <text x="676" y="140" textAnchor="middle" fill="#4ade80" fontFamily="-apple-system,sans-serif" fontSize="15" fontWeight="700">OutputFormat</text>
+                <text x="676" y="160" textAnchor="middle" fill="#86efac" fontFamily="-apple-system,sans-serif" fontSize="11">Node in Neo4j · Persistent</text>
+                <text x="676" y="178" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="10">Reusable across every document</text>
+                {/* Phase 2 - Document Ingestion */}
+                <rect x="0" y="202" width="1100" height="168" fill="#0d0d1f"/>
+                <text x="30" y="222" fill="#6366f1" fontFamily="-apple-system,sans-serif" fontSize="11" fontWeight="700" letterSpacing="2">DOCUMENT INGESTION — ONCE PER DOC · RE-RUN ONLY WHEN DOC CHANGES</text>
+                <rect x="30" y="234" width="155" height="82" rx="10" fill="#13132b" stroke="#3b3f8c" strokeWidth="1.5"/>
+                <text x="107" y="263" textAnchor="middle" fill="#a0a8ff" fontFamily="-apple-system,sans-serif" fontSize="14" fontWeight="600">Document</text>
+                <text x="107" y="283" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="11">PDF / Word</text>
+                <text x="107" y="302" textAnchor="middle" fill="#4b5563" fontFamily="-apple-system,sans-serif" fontSize="10">any format</text>
+                <line x1="186" y1="275" x2="224" y2="275" stroke="#4b5563" strokeWidth="1.5" markerEnd="url(#arr)"/>
+                <rect x="226" y="234" width="155" height="82" rx="10" fill="#13132b" stroke="#3b3f8c" strokeWidth="1.5"/>
+                <text x="303" y="263" textAnchor="middle" fill="#a0a8ff" fontFamily="-apple-system,sans-serif" fontSize="14" fontWeight="600">Claude</text>
+                <text x="303" y="283" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="11">Haiku · Extract</text>
+                <text x="303" y="302" textAnchor="middle" fill="#4b5563" fontFamily="-apple-system,sans-serif" fontSize="10">Pass 1</text>
+                <line x1="382" y1="275" x2="420" y2="275" stroke="#3b82f6" strokeWidth="1.5" markerEnd="url(#arr-blue)"/>
+                <rect x="422" y="222" width="430" height="118" rx="12" fill="#0d1f40" stroke="#1d4ed8" strokeWidth="2"/>
+                <text x="637" y="252" textAnchor="middle" fill="#60a5fa" fontFamily="-apple-system,sans-serif" fontSize="16" fontWeight="700">KnowledgeGraph</text>
+                <line x1="442" y1="262" x2="832" y2="262" stroke="#1e3a6e" strokeWidth="1"/>
+                <text x="637" y="283" textAnchor="middle" fill="#93c5fd" fontFamily="-apple-system,sans-serif" fontSize="12">Sections × Concepts × Relationships × Complexity × Organizations</text>
+                <text x="637" y="305" textAnchor="middle" fill="#4b6fa8" fontFamily="-apple-system,sans-serif" fontSize="11">Stored in Neo4j as a property graph</text>
+                <text x="637" y="326" textAnchor="middle" fill="#374151" fontFamily="-apple-system,sans-serif" fontSize="10" fontStyle="italic">Add new personas anytime — no re-ingestion needed</text>
+                {/* Phase 3 - Adapt */}
+                <rect x="0" y="380" width="1100" height="218" fill="#0a1208"/>
+                <text x="30" y="400" fill="#22c55e" fontFamily="-apple-system,sans-serif" fontSize="11" fontWeight="700" letterSpacing="2">ADAPT — UNLIMITED RUNS · NEW PERSONA OR FORMAT = NO RE-INGESTION NEEDED</text>
+                <rect x="30" y="414" width="148" height="72" rx="10" fill="#0d1f40" stroke="#1d4ed8" strokeWidth="1.5"/>
+                <text x="104" y="444" textAnchor="middle" fill="#60a5fa" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Knowledge</text>
+                <text x="104" y="463" textAnchor="middle" fill="#60a5fa" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Graph</text>
+                <text x="104" y="480" textAnchor="middle" fill="#374151" fontFamily="-apple-system,sans-serif" fontSize="10">already in Neo4j</text>
+                <text x="192" y="454" textAnchor="middle" fill="#374151" fontFamily="-apple-system,sans-serif" fontSize="22">×</text>
+                <rect x="206" y="414" width="148" height="72" rx="10" fill="#1e0f40" stroke="#7c3aed" strokeWidth="1.5"/>
+                <text x="280" y="444" textAnchor="middle" fill="#c4b5fd" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Audience</text>
+                <text x="280" y="463" textAnchor="middle" fill="#c4b5fd" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Profile</text>
+                <text x="280" y="480" textAnchor="middle" fill="#374151" fontFamily="-apple-system,sans-serif" fontSize="10">pick or add new</text>
+                <text x="368" y="454" textAnchor="middle" fill="#374151" fontFamily="-apple-system,sans-serif" fontSize="22">×</text>
+                <rect x="382" y="414" width="148" height="72" rx="10" fill="#0d2010" stroke="#16a34a" strokeWidth="1.5"/>
+                <text x="456" y="444" textAnchor="middle" fill="#4ade80" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Output</text>
+                <text x="456" y="463" textAnchor="middle" fill="#4ade80" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">Format</text>
+                <text x="456" y="480" textAnchor="middle" fill="#374151" fontFamily="-apple-system,sans-serif" fontSize="10">pick or add new</text>
+                <line x1="532" y1="450" x2="572" y2="450" stroke="#22c55e" strokeWidth="2" markerEnd="url(#arr-green)"/>
+                <rect x="574" y="414" width="120" height="72" rx="10" fill="#0a1f0a" stroke="#16a34a" strokeWidth="2"/>
+                <text x="634" y="444" textAnchor="middle" fill="#4ade80" fontFamily="-apple-system,sans-serif" fontSize="14" fontWeight="700">Traverse</text>
+                <text x="634" y="463" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="11">Graph Query</text>
+                <text x="634" y="480" textAnchor="middle" fill="#4b5563" fontFamily="-apple-system,sans-serif" fontSize="10">Claude Sonnet</text>
+                <line x1="696" y1="450" x2="734" y2="450" stroke="#22c55e" strokeWidth="2" markerEnd="url(#arr-green)"/>
+                <rect x="736" y="390" width="260" height="162" rx="12" fill="#0f1f0f" stroke="#16a34a" strokeWidth="2"/>
+                <text x="866" y="420" textAnchor="middle" fill="#4ade80" fontFamily="-apple-system,sans-serif" fontSize="15" fontWeight="700">AdaptedDocument</text>
+                <line x1="756" y1="430" x2="976" y2="430" stroke="#1f3320" strokeWidth="1"/>
+                <text x="866" y="454" textAnchor="middle" fill="#6ee7b7" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">+ Rationale</text>
+                <text x="866" y="472" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="11">kept · simplified · cut</text>
+                <line x1="756" y1="484" x2="976" y2="484" stroke="#1f3320" strokeWidth="1"/>
+                <text x="866" y="508" textAnchor="middle" fill="#f87171" fontFamily="-apple-system,sans-serif" fontSize="13" fontWeight="600">+ Gaps</text>
+                <text x="866" y="526" textAnchor="middle" fill="#6b7280" fontFamily="-apple-system,sans-serif" fontSize="11">what was needed · not in document</text>
+                {/* Soundbite */}
+                <rect x="0" y="608" width="1100" height="112" fill="#09090b"/>
+                <line x1="0" y1="608" x2="1100" y2="608" stroke="#1f2937" strokeWidth="1"/>
+                <text x="550" y="640" textAnchor="middle" fill="#9ca3af" fontFamily="-apple-system,sans-serif" fontSize="13" fontStyle="italic">&quot;ChatGPT prompts are ephemeral — every session starts from zero.</text>
+                <text x="550" y="662" textAnchor="middle" fill="#9ca3af" fontFamily="-apple-system,sans-serif" fontSize="13" fontStyle="italic">Adapt AI&apos;s nodes are permanent — the company owns their audience taxonomy.</text>
+                <text x="550" y="690" textAnchor="middle" fill="#e5e7eb" fontFamily="-apple-system,sans-serif" fontSize="14" fontWeight="700">That&apos;s a data moat, not just a product moat.</text>
+              </svg>
+            </div>
+          </div>
+        ) : mode === "campaign" ? (
           <div className="max-w-2xl mx-auto">
             <div className="mb-10 animate-fade-in">
               <h2 className="text-3xl sm:text-4xl font-bold text-center tracking-tight text-zinc-50 mb-4">

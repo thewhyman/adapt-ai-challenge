@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 
-type CampaignStep = "input" | "persona" | "campaign";
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PersonaResult {
   personaId: string;
@@ -12,508 +12,543 @@ interface PersonaResult {
   hubPlatform: string;
   hubRationale: string;
   spokePlatforms: string[];
-  audiencePersonas: { id: string; name: string; description: string }[];
+  audiencePersonas: { id: string; name: string; description: string; primaryPlatform: string }[];
   voice: { tone: string; style: string };
+}
+
+interface SwarmReview {
+  recommendation: "SHIP" | "REVISE" | "HOLD";
+  codex: { issues: { severity: string; platform?: string; issue: string; fix?: string }[]; blockerCount: number };
+  gemini: { dimensions: { dimension?: string; section?: string; score: number; note?: string }[]; overallScore: number; recommendation: string };
+  passed: boolean;
+  durationMs: number;
 }
 
 interface CampaignResult {
   campaignId: string;
   markdown: string;
+  campaign: any;
+  swarmReview: SwarmReview | null;
   documentTitle: string;
-  campaign: {
-    campaignTitle: string;
-    hubPlatform: string;
-    keyAngles: { angle: string; why: string; targetPersona: string }[];
-    platformAssets: Record<string, any>;
-    publishingSchedule: any[];
-  };
+  companyPersona: any;
 }
 
-const LOADING_STEPS_PERSONA = [
-  "Fetching company website...",
-  "Analyzing brand voice...",
-  "Identifying audience personas...",
-  "Determining hub platform...",
+type Stage = "input" | "building-persona" | "persona-ready" | "building-campaign" | "done";
+
+const PLATFORM_ICONS: Record<string, string> = {
+  linkedin: "in",
+  twitter: "𝕏",
+  reddit: "r/",
+  instagram: "ig",
+  substack: "ss",
+  github: "gh",
+};
+
+const STAGE_STEPS = [
+  { id: "input", label: "Input" },
+  { id: "building-persona", label: "Learning company voice" },
+  { id: "persona-ready", label: "Persona built" },
+  { id: "building-campaign", label: "Generating campaign" },
+  { id: "done", label: "Campaign ready" },
 ];
 
-const LOADING_STEPS_INGEST = [
-  "Fetching content...",
-  "Extracting structure with Claude...",
-  "Building knowledge graph...",
+const DEMO_COMPANIES = [
+  {
+    name: "Gaia Dynamics",
+    url: "https://gaiadynamics.ai",
+    tag: "Trade Compliance AI",
+    tagClass: "bg-cyan-500/20 text-cyan-400",
+    description: "AI-powered tariff compliance — Andrew Ng backed",
+  },
+  {
+    name: "Landing AI",
+    url: "https://landing.ai",
+    tag: "Manufacturing AI",
+    tagClass: "bg-orange-500/20 text-orange-400",
+    description: "Visual AI platform for industrial inspection",
+  },
 ];
 
-const LOADING_STEPS_CAMPAIGN = [
-  "Reading extracted content...",
-  "Identifying top marketing angles...",
-  "Writing LinkedIn post...",
-  "Writing X thread...",
-  "Writing Reddit post...",
-  "Writing Instagram caption...",
-  "Writing Substack lede...",
-  "Building hub-and-spoke plan...",
-  "Generating publishing schedule...",
-];
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function LoadingSteps({ steps, active }: { steps: string[]; active: number }) {
+function ScoreBadge({ score }: { score: number }) {
+  const color = score >= 8 ? "text-emerald-400 bg-emerald-500/10" : score >= 6 ? "text-amber-400 bg-amber-500/10" : "text-red-400 bg-red-500/10";
+  return <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${color}`}>{score}/10</span>;
+}
+
+function RecommendationBadge({ rec }: { rec: string }) {
+  const styles: Record<string, string> = {
+    SHIP: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    REVISE: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    HOLD: "bg-red-500/20 text-red-400 border-red-500/30",
+  };
   return (
-    <div className="space-y-2 py-4">
-      {steps.map((step, i) => (
-        <div
-          key={i}
-          className={`flex items-center gap-3 text-sm transition-all duration-300 ${
-            i < active ? "text-emerald-400" : i === active ? "text-zinc-100" : "text-zinc-600"
-          }`}
-        >
-          {i < active ? (
-            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          ) : i === active ? (
-            <svg className="w-4 h-4 shrink-0 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-            </svg>
-          ) : (
-            <div className="w-4 h-4 rounded-full border border-zinc-700 shrink-0" />
-          )}
-          {step}
-        </div>
-      ))}
-    </div>
+    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${styles[rec] || styles.SHIP}`}>
+      {rec}
+    </span>
   );
 }
 
-export default function CampaignGenerator() {
-  const [step, setStep] = useState<CampaignStep>("input");
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
-  const [loadingSteps, setLoadingSteps] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
+// ─── Main component ───────────────────────────────────────────────────────────
 
-  // Input state
-  const [companyUrl, setCompanyUrl] = useState("");
-  const [contentUrl, setContentUrl] = useState("");
+interface CampaignGeneratorProps {
+  isLoading: boolean;
+  setIsLoading: (v: boolean) => void;
+}
+
+export default function CampaignGenerator({ isLoading, setIsLoading }: CampaignGeneratorProps) {
+  const [stage, setStage] = useState<Stage>("input");
+  const [url, setUrl] = useState("");
   const [companyName, setCompanyName] = useState("");
-
-  // Results state
-  const [personaResult, setPersonaResult] = useState<PersonaResult | null>(null);
-  const [documentId, setDocumentId] = useState<string | null>(null);
+  const [persona, setPersona] = useState<PersonaResult | null>(null);
   const [campaignResult, setCampaignResult] = useState<CampaignResult | null>(null);
-  const [activeTab, setActiveTab] = useState<"preview" | "raw">("preview");
+  const [documentId, setDocumentId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"content" | "plan" | "review">("content");
+  const [progressMsg, setProgressMsg] = useState("");
 
-  // Animate through loading steps
-  function animateSteps(steps: string[], intervalMs = 2000) {
-    setLoadingSteps(steps);
-    setLoadingStep(0);
-    let i = 0;
-    const timer = setInterval(() => {
-      i++;
-      if (i < steps.length) setLoadingStep(i);
-      else clearInterval(timer);
-    }, intervalMs);
-    return timer;
-  }
+  // ── Step 1: Ingest URL + build persona ──────────────────────────────────────
 
   async function handleBuildPersona() {
-    if (!companyUrl.trim()) {
-      setError("Please enter your company website URL.");
-      return;
-    }
+    if (!url.trim()) { setError("Enter a URL to get started."); return; }
     setError(null);
     setIsLoading(true);
-    const timer = animateSteps(LOADING_STEPS_PERSONA, 2500);
+    setStage("building-persona");
 
     try {
-      const res = await fetch("/api/persona-builder", {
+      // Ingest URL
+      setProgressMsg("Reading the website...");
+      const ingestRes = await fetch("/api/ingest-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: companyUrl.trim(),
-          companyName: companyName.trim() || undefined,
-        }),
+        body: JSON.stringify({ url: url.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to build persona");
-      clearInterval(timer);
-      setPersonaResult(data);
-      setStep("persona");
+      const ingestData = await ingestRes.json();
+      if (!ingestRes.ok) throw new Error(ingestData.error || "Failed to read URL");
+      setDocumentId(ingestData.documentId);
+
+      // Build persona
+      setProgressMsg("Learning company voice and audience...");
+      const personaRes = await fetch("/api/persona-builder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url.trim(), companyName: companyName.trim() || undefined }),
+      });
+      const personaData = await personaRes.json();
+      if (!personaRes.ok) throw new Error(personaData.error || "Failed to build persona");
+
+      setPersona(personaData);
+      setStage("persona-ready");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to build company persona");
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setStage("input");
     } finally {
       setIsLoading(false);
+      setProgressMsg("");
     }
   }
 
+  // ── Step 2: Generate campaign ────────────────────────────────────────────────
+
   async function handleGenerateCampaign() {
-    if (!contentUrl.trim() && !personaResult) {
-      setError("Please enter a content URL to generate a campaign from.");
-      return;
-    }
+    if (!documentId || !persona) return;
     setError(null);
     setIsLoading(true);
+    setStage("building-campaign");
+    setProgressMsg("Generating 5 platform assets + campaign plan... (swarm review runs in parallel)");
 
-    let docId = documentId;
-
-    // Ingest the content URL if not already done
-    if (!docId && contentUrl.trim()) {
-      const ingestTimer = animateSteps(LOADING_STEPS_INGEST, 1500);
-      try {
-        const res = await fetch("/api/ingest-url", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: contentUrl.trim() }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to ingest URL");
-        clearInterval(ingestTimer);
-        docId = data.documentId;
-        setDocumentId(docId);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch content URL");
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    if (!docId) {
-      setError("No document to generate campaign from.");
-      setIsLoading(false);
-      return;
-    }
-
-    // Generate campaign
-    const campaignTimer = animateSteps(LOADING_STEPS_CAMPAIGN, 1800);
     try {
       const res = await fetch("/api/campaign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          documentId: docId,
-          personaId: personaResult?.personaId,
-          companyName: personaResult?.companyName || companyName.trim(),
+          documentId,
+          personaId: persona.personaId,
+          companyName: persona.companyName,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate campaign");
-      clearInterval(campaignTimer);
+      if (!res.ok) throw new Error(data.error || "Campaign generation failed");
+
       setCampaignResult(data);
-      setStep("campaign");
-      window.scrollTo(0, 0);
+      setStage("done");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate campaign");
+      setError(err instanceof Error ? err.message : "Campaign generation failed");
+      setStage("persona-ready");
     } finally {
       setIsLoading(false);
+      setProgressMsg("");
     }
   }
+
+  // ── Download markdown ────────────────────────────────────────────────────────
 
   function handleDownload() {
     if (!campaignResult) return;
     const blob = new Blob([campaignResult.markdown], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    const slug = (campaignResult.campaign.campaignTitle || campaignResult.documentTitle || "campaign")
-      .toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40);
-    a.download = `xteamos-campaign-${slug}.md`;
+    a.href = URL.createObjectURL(blob);
+    const slug = (campaignResult.documentTitle || "campaign").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").slice(0, 40);
+    a.download = `campaign-${new Date().toISOString().split("T")[0]}-${slug}.md`;
     a.click();
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(a.href);
   }
 
   function handleReset() {
-    setStep("input");
-    setPersonaResult(null);
-    setDocumentId(null);
-    setCampaignResult(null);
-    setError(null);
-    setCompanyUrl("");
-    setContentUrl("");
+    setStage("input");
+    setUrl("");
     setCompanyName("");
+    setPersona(null);
+    setCampaignResult(null);
+    setDocumentId(null);
+    setError(null);
   }
 
+  // ── Stage indicator ──────────────────────────────────────────────────────────
+
+  const stageIdx = STAGE_STEPS.findIndex((s) => s.id === stage);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────────
+
   return (
-    <div className="space-y-8">
-      {step === "input" && (
-        <div className="space-y-6 animate-fade-in">
-          {/* Try with Gaia demo */}
-          <div className="glass-card rounded-2xl p-5 border border-indigo-500/20 bg-indigo-500/5">
-            <div className="flex items-start gap-3">
-              <span className="text-lg">⚡</span>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-indigo-300 mb-1">Try it live — Gaia Dynamics</p>
-                <p className="text-xs text-zinc-400 mb-3">
-                  Andrew Ng's AI Fund portfolio company. Real tariff compliance AI. Real campaign output.
-                </p>
-                <button
-                  onClick={() => {
-                    setCompanyUrl("https://gaiadynamics.ai");
-                    setContentUrl("https://gaiadynamics.ai");
-                    setCompanyName("Gaia Dynamics");
-                  }}
-                  className="text-xs font-medium text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors"
-                >
-                  Pre-fill Gaia Dynamics →
-                </button>
+    <div className="space-y-8 animate-fade-in">
+
+      {/* Progress bar */}
+      {stage !== "input" && (
+        <div className="flex items-center gap-2 text-xs text-zinc-500 justify-center">
+          {STAGE_STEPS.filter(s => s.id !== "input").map((step, i) => {
+            const done = stageIdx > i + 1;
+            const active = stageIdx === i + 1;
+            return (
+              <div key={step.id} className="flex items-center gap-2">
+                <span className={`flex items-center gap-1.5 ${done ? "text-emerald-400" : active ? "text-indigo-400" : "text-zinc-600"}`}>
+                  {done ? "✓" : active ? "▸" : "○"} {step.label}
+                </span>
+                {i < 3 && <span className="text-zinc-700">—</span>}
               </div>
-            </div>
-          </div>
-
-          {/* Company URL */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-300">
-              Company Website
-              <span className="ml-1.5 text-xs text-zinc-500">(we'll learn your voice from this)</span>
-            </label>
-            <input
-              type="url"
-              value={companyUrl}
-              onChange={(e) => setCompanyUrl(e.target.value)}
-              placeholder="https://gaiadynamics.ai"
-              disabled={isLoading}
-              className="w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50"
-            />
-          </div>
-
-          {/* Company name */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-300">
-              Company Name
-              <span className="ml-1.5 text-xs text-zinc-500">(optional, auto-detected)</span>
-            </label>
-            <input
-              type="text"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Gaia Dynamics"
-              disabled={isLoading}
-              className="w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50"
-            />
-          </div>
-
-          {/* Content URL */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-300">
-              Content to Promote
-              <span className="ml-1.5 text-xs text-zinc-500">(product page, announcement, blog post, doc)</span>
-            </label>
-            <input
-              type="url"
-              value={contentUrl}
-              onChange={(e) => setContentUrl(e.target.value)}
-              placeholder="https://gaiadynamics.ai/tariff-engine"
-              disabled={isLoading}
-              className="w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50"
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-
-          {isLoading ? (
-            <div className="glass-card rounded-2xl p-6">
-              <LoadingSteps steps={loadingSteps} active={loadingStep} />
-            </div>
-          ) : (
-            <button
-              onClick={handleBuildPersona}
-              disabled={!companyUrl.trim()}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-sm hover:from-indigo-500 hover:to-violet-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-500/25"
-            >
-              Build Company Persona →
-            </button>
-          )}
+            );
+          })}
         </div>
       )}
 
-      {step === "persona" && personaResult && (
+      {/* Loading indicator */}
+      {isLoading && progressMsg && (
+        <div className="flex items-center gap-3 justify-center py-2">
+          <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-zinc-400">{progressMsg}</span>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          {error}
+        </div>
+      )}
+
+      {/* ── Stage: input ── */}
+      {stage === "input" && (
+        <div className="space-y-6">
+          {/* Demo cards */}
+          <div>
+            <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Try a demo company</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {DEMO_COMPANIES.map((d) => (
+                <button
+                  key={d.url}
+                  onClick={() => { setUrl(d.url); setCompanyName(d.name); }}
+                  className="text-left rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 hover:border-zinc-600 hover:bg-zinc-900 transition-all"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-zinc-100 text-sm">{d.name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${d.tagClass}`}>{d.tag}</span>
+                  </div>
+                  <p className="text-xs text-zinc-500">{d.description}</p>
+                  <p className="text-xs text-zinc-600 mt-1 truncate">{d.url}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* URL input */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Company website URL</label>
+              <input
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:border-indigo-500/60 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 transition-all"
+                onKeyDown={(e) => e.key === "Enter" && !isLoading && handleBuildPersona()}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Company name (optional)</label>
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Auto-detected from URL"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:border-indigo-500/60 focus:outline-none focus:ring-1 focus:ring-indigo-500/30 transition-all"
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleBuildPersona}
+            disabled={isLoading || !url.trim()}
+            className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          >
+            Learn company voice →
+          </button>
+        </div>
+      )}
+
+      {/* ── Stage: building-persona (loading) ── */}
+      {stage === "building-persona" && (
+        <div className="flex flex-col items-center gap-6 py-12">
+          <div className="w-12 h-12 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="text-center">
+            <p className="text-zinc-200 font-medium">Reading {url}</p>
+            <p className="text-zinc-500 text-sm mt-1">Extracting company voice, audience, and distribution strategy...</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Stage: persona-ready ── */}
+      {stage === "persona-ready" && persona && (
         <div className="space-y-6 animate-fade-in">
-          {/* Persona summary card */}
-          <div className="glass-card rounded-2xl p-6 border border-emerald-500/20">
-            <div className="flex items-start justify-between mb-4">
+          <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-5 space-y-4">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-zinc-100 text-lg">{personaResult.companyName}</h3>
-                <p className="text-sm text-zinc-400 mt-0.5">{personaResult.domain}</p>
+                <h3 className="font-semibold text-zinc-100">{persona.companyName}</h3>
+                <p className="text-xs text-zinc-500 mt-0.5">{persona.domain}</p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
-                Persona Ready
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="rounded-xl bg-zinc-900/60 p-3">
-                <p className="text-xs text-zinc-500 mb-0.5">Voice</p>
-                <p className="text-sm text-zinc-200 font-medium">{personaResult.voice?.tone}</p>
-                <p className="text-xs text-zinc-500 mt-0.5">{personaResult.voice?.style}</p>
-              </div>
-              <div className="rounded-xl bg-zinc-900/60 p-3">
-                <p className="text-xs text-zinc-500 mb-0.5">Hub Platform</p>
-                <p className="text-sm text-zinc-200 font-medium capitalize">{personaResult.hubPlatform}</p>
-                <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{personaResult.hubRationale}</p>
+              <div className="text-right">
+                <p className="text-xs text-zinc-500">Hub platform</p>
+                <span className="text-sm font-bold text-indigo-400 uppercase">{persona.hubPlatform}</span>
               </div>
             </div>
 
-            {personaResult.audiencePersonas?.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-xs text-zinc-500 mb-2">Audience Personas Detected</p>
-                <div className="flex flex-wrap gap-2">
-                  {personaResult.audiencePersonas.slice(0, 4).map((p) => (
-                    <span key={p.id} className="px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300 text-xs">
-                      {p.name}
+                <p className="text-xs text-zinc-500 mb-1">Voice</p>
+                <p className="text-zinc-300">{persona.voice?.tone} · {persona.voice?.style}</p>
+              </div>
+              <div>
+                <p className="text-xs text-zinc-500 mb-1">Spokes</p>
+                <div className="flex gap-1 flex-wrap">
+                  {(persona.spokePlatforms || []).map((p) => (
+                    <span key={p} className="text-xs px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">
+                      {PLATFORM_ICONS[p] || p}
                     </span>
                   ))}
                 </div>
               </div>
+            </div>
+
+            {persona.audiencePersonas?.length > 0 && (
+              <div>
+                <p className="text-xs text-zinc-500 mb-2">Target audiences</p>
+                <div className="space-y-1.5">
+                  {persona.audiencePersonas.slice(0, 3).map((ap) => (
+                    <div key={ap.id} className="flex items-start gap-2 text-sm">
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono shrink-0 mt-0.5">
+                        {PLATFORM_ICONS[ap.primaryPlatform] || ap.primaryPlatform}
+                      </span>
+                      <div>
+                        <span className="text-zinc-200 font-medium">{ap.name}</span>
+                        {ap.description && <span className="text-zinc-500"> — {ap.description.slice(0, 80)}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
+
+            <p className="text-xs text-zinc-500 italic">{persona.hubRationale}</p>
           </div>
 
-          {/* Content URL input */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-300">
-              What do you want to promote?
-            </label>
-            <input
-              type="url"
-              value={contentUrl}
-              onChange={(e) => setContentUrl(e.target.value)}
-              placeholder="https://gaiadynamics.ai/tariff-engine"
+          <div className="flex gap-3">
+            <button
+              onClick={handleReset}
+              className="flex-1 rounded-xl border border-zinc-700 py-3 text-sm text-zinc-400 hover:border-zinc-500 hover:text-zinc-300 transition-all"
+            >
+              ← Start over
+            </button>
+            <button
+              onClick={handleGenerateCampaign}
               disabled={isLoading}
-              className="w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:opacity-50"
-            />
+              className="flex-[2] rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-40 transition-all"
+            >
+              Generate campaign →
+            </button>
           </div>
-
-          {error && (
-            <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-
-          {isLoading ? (
-            <div className="glass-card rounded-2xl p-6">
-              <LoadingSteps steps={loadingSteps} active={loadingStep} />
-            </div>
-          ) : (
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setStep("input"); setError(null); }}
-                className="px-5 py-3 rounded-xl border border-zinc-700 text-sm text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-all"
-              >
-                Back
-              </button>
-              <button
-                onClick={handleGenerateCampaign}
-                disabled={!contentUrl.trim()}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-sm hover:from-indigo-500 hover:to-violet-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-500/25"
-              >
-                Generate Campaign →
-              </button>
-            </div>
-          )}
         </div>
       )}
 
-      {step === "campaign" && campaignResult && (
-        <div className="space-y-6 animate-fade-in">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="font-bold text-zinc-100 text-xl">
-                {campaignResult.campaign.campaignTitle || campaignResult.documentTitle}
-              </h3>
-              <p className="text-sm text-zinc-400 mt-1">
-                {campaignResult.campaign.keyAngles?.length || 0} angles ·{" "}
-                {Object.keys(campaignResult.campaign.platformAssets || {}).length} platform assets ·{" "}
-                {campaignResult.campaign.publishingSchedule?.length || 0} scheduled posts
-              </p>
+      {/* ── Stage: building-campaign (loading) ── */}
+      {stage === "building-campaign" && (
+        <div className="flex flex-col items-center gap-6 py-12">
+          <div className="w-12 h-12 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+          <div className="text-center">
+            <p className="text-zinc-200 font-medium">Generating campaign for {persona?.companyName}</p>
+            <p className="text-zinc-500 text-sm mt-1">5 platform assets · campaign plan · swarm review</p>
+            <div className="flex items-center gap-3 justify-center mt-4 text-xs text-zinc-600">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                Claude generating content
+              </span>
+              <span>+</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Codex reviewing platform rules
+              </span>
+              <span>+</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Gemini scoring quality
+              </span>
             </div>
-            <div className="flex gap-2 shrink-0">
+          </div>
+        </div>
+      )}
+
+      {/* ── Stage: done ── */}
+      {stage === "done" && campaignResult && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Header row */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-zinc-100">{campaignResult.documentTitle}</h3>
+              <p className="text-xs text-zinc-500 mt-0.5">{campaignResult.companyPersona?.companyName}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {campaignResult.swarmReview && (
+                <RecommendationBadge rec={campaignResult.swarmReview.recommendation} />
+              )}
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-medium hover:bg-emerald-500/30 transition-all"
+                className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-500 hover:text-zinc-100 transition-all"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download .md
+                ↓ Download .md
               </button>
               <button
                 onClick={handleReset}
-                className="px-4 py-2 rounded-xl border border-zinc-700 text-sm text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-all"
+                className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:border-zinc-500 hover:text-zinc-300 transition-all"
               >
-                New Campaign
+                New campaign
               </button>
             </div>
           </div>
 
-          {/* Tab toggle */}
-          <div className="flex gap-1 p-1 bg-zinc-900 rounded-xl border border-zinc-800">
-            {(["preview", "raw"] as const).map((tab) => (
+          {/* Swarm review summary bar */}
+          {campaignResult.swarmReview && (
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 flex flex-wrap items-center gap-4 text-xs">
+              <span className="text-zinc-500 font-medium">Swarm Review</span>
+              <span className="flex items-center gap-1.5 text-zinc-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                Codex: {campaignResult.swarmReview.codex.blockerCount} blockers, {campaignResult.swarmReview.codex.issues.length} total issues
+              </span>
+              <span className="flex items-center gap-1.5 text-zinc-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                Gemini: {campaignResult.swarmReview.gemini.overallScore}/10
+              </span>
+              <span className="text-zinc-600">{campaignResult.swarmReview.durationMs}ms</span>
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div className="flex gap-1 border-b border-zinc-800 pb-0">
+            {(["content", "plan", "review"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
+                className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
                   activeTab === tab
-                    ? "bg-zinc-800 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "text-zinc-100 border-indigo-500"
+                    : "text-zinc-500 border-transparent hover:text-zinc-300"
                 }`}
               >
-                {tab === "preview" ? "Campaign Preview" : "Raw Markdown"}
+                {tab === "review" ? `Swarm Review${campaignResult.swarmReview?.codex.blockerCount ? ` (${campaignResult.swarmReview.codex.blockerCount} issues)` : ""}` : tab === "content" ? "Platform Assets" : "Campaign Plan"}
               </button>
             ))}
           </div>
 
-          {activeTab === "preview" ? (
-            <div className="space-y-4">
-              {/* Key angles */}
-              {campaignResult.campaign.keyAngles?.length > 0 && (
-                <div className="glass-card rounded-2xl p-5">
-                  <h4 className="text-sm font-semibold text-zinc-300 mb-3">Key Marketing Angles</h4>
-                  <div className="space-y-3">
-                    {campaignResult.campaign.keyAngles.map((a, i) => (
-                      <div key={i} className="rounded-xl bg-zinc-900/60 p-3">
-                        <p className="text-sm font-medium text-zinc-200">{a.angle}</p>
-                        <p className="text-xs text-zinc-500 mt-1">{a.why}</p>
-                        <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 text-xs">
-                          → {a.targetPersona}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Platform assets preview */}
-              {campaignResult.campaign.platformAssets && Object.entries(campaignResult.campaign.platformAssets).map(([platform, asset]: [string, any]) => (
-                <div key={platform} className="glass-card rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-400 uppercase tracking-wider">
-                      {platform}
-                    </span>
-                    <span className="text-xs text-zinc-500">{asset.type}</span>
-                  </div>
-                  <div className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                    {platform === "twitter" && asset.tweets
-                      ? asset.tweets.map((t: any) => (
-                          <div key={t.n} className="mb-2 pb-2 border-b border-zinc-800 last:border-0">
-                            <span className="text-xs text-zinc-500 mr-2">{t.n}.</span>{t.text}
-                          </div>
-                        ))
-                      : platform === "instagram"
-                      ? <>{asset.caption}<br /><br /><span className="text-zinc-500 text-xs">{asset.hashtags?.map((h: string) => `#${h}`).join(" ")}</span></>
-                      : asset.hook
-                      ? <><strong className="text-zinc-100">{asset.hook}</strong><br /><br />{asset.body}</>
-                      : asset.lede || asset.body || JSON.stringify(asset, null, 2)
-                    }
-                  </div>
-                </div>
-              ))}
+          {/* Tab: Platform Assets (from markdown) */}
+          {activeTab === "content" && (
+            <div className="prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown>{campaignResult.markdown.split("## Campaign Management Plan")[0]}</ReactMarkdown>
             </div>
-          ) : (
-            <div className="glass-card rounded-2xl p-5 overflow-auto max-h-[70vh]">
-              <pre className="text-xs text-zinc-300 whitespace-pre-wrap font-mono leading-relaxed">
-                {campaignResult.markdown}
-              </pre>
+          )}
+
+          {/* Tab: Campaign Plan */}
+          {activeTab === "plan" && (
+            <div className="prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown>{`## Campaign Management Plan\n\n` + (campaignResult.markdown.split("## Campaign Management Plan")[1] || "").split("## Swarm Quality Review")[0]}</ReactMarkdown>
+            </div>
+          )}
+
+          {/* Tab: Swarm Review */}
+          {activeTab === "review" && (
+            <div className="space-y-4">
+              {!campaignResult.swarmReview ? (
+                <p className="text-sm text-zinc-500">Swarm review was not available (Codex/Gemini CLIs not reachable from server).</p>
+              ) : (
+                <>
+                  {/* Codex issues */}
+                  <div className="rounded-xl border border-zinc-800 overflow-hidden">
+                    <div className="px-4 py-3 bg-zinc-900/60 border-b border-zinc-800 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-zinc-100">Codex — Platform Rule Check</span>
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${campaignResult.swarmReview.codex.blockerCount > 0 ? "bg-red-500/20 text-red-400" : "bg-emerald-500/20 text-emerald-400"}`}>
+                        {campaignResult.swarmReview.codex.blockerCount} blockers
+                      </span>
+                    </div>
+                    {campaignResult.swarmReview.codex.issues.length === 0 ? (
+                      <p className="px-4 py-3 text-sm text-emerald-400">✅ No platform violations found</p>
+                    ) : (
+                      <ul className="divide-y divide-zinc-800">
+                        {campaignResult.swarmReview.codex.issues.map((issue, i) => (
+                          <li key={i} className="px-4 py-3 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                issue.severity === "BLOCKER" ? "bg-red-500/20 text-red-400" :
+                                issue.severity === "WARNING" ? "bg-amber-500/20 text-amber-400" :
+                                "bg-zinc-700 text-zinc-400"
+                              }`}>{issue.severity}</span>
+                              {issue.platform && <span className="text-xs text-zinc-500 font-mono">{issue.platform}</span>}
+                            </div>
+                            <p className="text-sm text-zinc-300">{issue.issue}</p>
+                            {issue.fix && <p className="text-xs text-zinc-500">→ {issue.fix}</p>}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  {/* Gemini scores */}
+                  <div className="rounded-xl border border-zinc-800 overflow-hidden">
+                    <div className="px-4 py-3 bg-zinc-900/60 border-b border-zinc-800 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-zinc-100">Gemini — Content Quality</span>
+                      <ScoreBadge score={campaignResult.swarmReview.gemini.overallScore} />
+                    </div>
+                    <ul className="divide-y divide-zinc-800">
+                      {campaignResult.swarmReview.gemini.dimensions.map((d, i) => (
+                        <li key={i} className="px-4 py-3 flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-medium text-zinc-200">{d.dimension || d.section}</p>
+                            {(d.note) && <p className="text-xs text-zinc-500 mt-0.5">{d.note}</p>}
+                          </div>
+                          <ScoreBadge score={d.score} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

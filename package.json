@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "demo": "ts-node --esm scripts/demo-record.ts",
+    "demo:video": "ts-node --esm scripts/demo-record.ts --video",
+    "demo:local": "ts-node --esm scripts/demo-record.ts http://localhost:3000",
+    "swarm-review": "bash scripts/swarm-review.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.88.0",
@@ -21,6 +25,7 @@
     "react-markdown": "^10.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.50.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pdf-parse": "^1.1.5",
@@ -29,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
