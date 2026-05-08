@@ -95,7 +95,7 @@ export default function Home() {
               Adapt AI
             </h1>
             <p className="text-sm font-medium gradient-text mt-0.5">
-              Co-Dialectic Persona Engine
+              Traverse, don&apos;t translate.
             </p>
           </button>
           {/* Mode tabs */}
@@ -160,15 +160,15 @@ export default function Home() {
               Adapt context, not just content.
             </h2>
             <p className="text-center text-zinc-400 max-w-2xl mx-auto text-lg leading-relaxed mb-12 animate-fade-in-delay-1">
-              Transform dense documents into targeted intelligence for any audience — powered by ontology extraction and persona-driven synthesis.
+              Transform any document into targeted intelligence for any audience. Build the knowledge graph once — then adapt it for every reader, surfacing what your source never covered.
             </p>
 
             <div className="flex justify-center items-center gap-3 animate-fade-in-delay-2">
-              <StepBadge number={1} label="Extract Ontology" active={step === "upload"} done={step !== "upload"} />
+              <StepBadge number={1} label="Build Knowledge Graph" active={step === "upload"} done={step !== "upload"} />
               <StepDivider />
-              <StepBadge number={2} label="Co-Dialectic Target" active={step === "select"} done={false} />
+              <StepBadge number={2} label="Define Audience" active={step === "select"} done={false} />
               <StepDivider />
-              <StepBadge number={3} label="Synthesis" active={step === "results"} done={false} />
+              <StepBadge number={3} label="Adapt + Detect Gaps" active={step === "results"} done={false} />
             </div>
           </div>
         )}
