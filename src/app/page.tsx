@@ -166,7 +166,7 @@ export default function Home() {
             <div className="flex justify-center items-center gap-3 animate-fade-in-delay-2">
               <StepBadge number={1} label="Build Knowledge Graph" active={step === "upload"} done={step !== "upload"} />
               <StepDivider />
-              <StepBadge number={2} label="Define Audience" active={step === "select"} done={false} />
+              <StepBadge number={2} label="Persona Target" active={step === "select"} done={false} />
               <StepDivider />
               <StepBadge number={3} label="Adapt + Detect Gaps" active={step === "results"} done={false} />
             </div>
